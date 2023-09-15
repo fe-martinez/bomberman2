@@ -1,7 +1,7 @@
 _ _ _ _ _ _ _
+_ W _ W DD W _
+S4 R R R F3 _ _
 _ W _ W _ W _
-_ R R R F3 _ _
-_ W _ W _ W _
-B6 _ _ _ DU _ _
+B2 _ B9 _ DU _ _
 _ W _ W _ W _
 _ _ _ _ _ _ _

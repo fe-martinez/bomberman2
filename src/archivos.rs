@@ -88,5 +88,7 @@ pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
             }
         };
     }
+
+    println!("Se transformo el archivo a mapa, side size: {}", mapa.side_size);
     return Some(mapa);
 }

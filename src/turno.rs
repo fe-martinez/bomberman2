@@ -16,7 +16,9 @@ fn buscar_arriba(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, especi
     let mut tiles_arriba: Vec<Coordenada> = Vec::new();
     
     for y in (y_pos as i32 - alcance as i32..y_pos as i32).rev() {
-        if y < 0 {break};
+        if y < 0 {
+            break;
+        }
 
         match chequear_tile(x_pos, y as usize, &mapa, especial){
             None => break,
@@ -36,8 +38,10 @@ fn buscar_arriba(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, especi
 fn buscar_abajo(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, especial: bool) -> Vec<Coordenada> {
     let mut tiles_abajo: Vec<Coordenada> = Vec::new();
     
-    for y in y_pos..(y_pos + alcance as usize + 1) {
-        if y >= mapa.side_size as usize {break};
+    for y in y_pos..(y_pos + alcance + 1 as usize) {
+        if y >= mapa.side_size as usize {
+            break;
+        }
 
         match chequear_tile(x_pos, y as usize, mapa, especial){
             None => break,
@@ -59,7 +63,9 @@ fn buscar_izquierda(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, esp
     let mut tiles_izquierda: Vec<Coordenada> = Vec::new();
     
     for x in (x_pos as i32 - alcance as i32..x_pos as i32).rev() {
-        if x < 0 {break};
+        if x < 0 {
+            break;
+        }
 
         match chequear_tile(x as usize, y_pos, mapa, especial){
             None => break,
@@ -80,14 +86,16 @@ fn buscar_izquierda(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, esp
 fn buscar_derecha(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, especial: bool) -> Vec<Coordenada> {
     let mut tiles_derecha: Vec<Coordenada> = Vec::new();
     
-    for x in x_pos..(x_pos + alcance as usize + 1) {
-        if x >= mapa.side_size as usize {break};
+    for x in x_pos..(x_pos + alcance + 1 as usize) {
+        if x >= (mapa.side_size as usize) {
+            break;
+        }
 
         match chequear_tile(x as usize, y_pos, mapa, especial){
             None => break,
             Some(tile) => match tile {
                 Tile::Desvio(_) => {
-                    let faltante = alcance as usize - (x - x_pos) as usize;
+                    let faltante: usize = alcance as usize - (x - x_pos) as usize;
                     tiles_derecha.append(&mut desviar(mapa, x, y_pos, faltante, especial));
                     break;
                 }
@@ -101,23 +109,23 @@ fn buscar_derecha(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, espec
 
 fn desviar(mapa: &Mapa, x_pos: usize, y_pos: usize, alcance: usize, especial: bool) -> Vec<Coordenada>{
     let mut tiles_desvio: Vec<Coordenada> = Vec::new();
-    println!("VINE ACA");
+    println!("VINE ACA, x: {}, y: {}, alcance: {}", x_pos, y_pos, alcance);
     if let Some(tile) = mapa.obtener_tile(x_pos, y_pos) {
         match tile {
             Tile::Desvio(desvio) => {
                 match desvio.direccion {
                     desvio::Direccion::Arriba => {
-                        tiles_desvio.append(&mut buscar_arriba(mapa, x_pos, y_pos, alcance, especial));
+                        tiles_desvio.append(&mut buscar_arriba(mapa, x_pos, y_pos - 1, alcance, especial));
                         println!("ACA TAMBIEN");
                     }
                     desvio::Direccion::Abajo => {
-                        tiles_desvio.append(&mut buscar_abajo(mapa, x_pos, y_pos, alcance, especial));
+                        tiles_desvio.append(&mut buscar_abajo(mapa, x_pos, y_pos + 1, alcance, especial));
                     }
                     desvio::Direccion::Izquierda => {
-                        tiles_desvio.append(&mut buscar_izquierda(mapa, x_pos, y_pos, alcance, especial));
+                        tiles_desvio.append(&mut buscar_izquierda(mapa, x_pos - 1, y_pos, alcance, especial));
                     }
                     desvio::Direccion::Derecha => {
-                        tiles_desvio.append(&mut buscar_derecha(mapa, x_pos, y_pos, alcance, especial));
+                        tiles_desvio.append(&mut buscar_derecha(mapa, x_pos + 1, y_pos, alcance, especial));
                     }
                 }
             }
@@ -138,37 +146,32 @@ pub fn buscar_tiles(mapa: &Mapa, x_pos: usize, y_pos: usize, bomba: Bomba) -> Ve
     
     for tile in &tiles_encontradas {
         println!("Tile: {:?}", tile);
-        //println!("Tile: {:?}", mapa.obtener_tile(x_pos, y_pos));
     }
 
     tiles_encontradas
 }
 
-pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize){
+pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &str>{
     if let Some(tile) = mapa.obtener_tile(x_pos, y_pos) {
         match tile {
             Tile::BombaNormal(bomba) | Tile::BombaEspecial(bomba) => {
                 let tiles_adyacentes: Vec<Coordenada> = buscar_tiles(&mapa, x_pos, y_pos, bomba.clone());
                 mapa.destruir_tile(x_pos, y_pos);
                 for tile in tiles_adyacentes {
-                    println!("Tile: {:?}", tile);
-                    println!("Tile: {:?}", mapa.obtener_tile(tile.x, tile.y));
                     match mapa.obtener_tile(tile.x, tile.y) {
-                        Some(Tile::Enemigo(enemigo)) => {
-                            if enemigo.vida > 1 {
-                                mapa.atacar_enemigo(tile.x, tile.y, 1);
-                            } else {
-                                mapa.destruir_tile(tile.x, tile.y);
-                            }
+                        Some(Tile::Enemigo(_)) => {
+                            mapa.atacar_enemigo(x_pos, y_pos, tile.x, tile.y, 1);
                         }
                         Some(Tile::BombaNormal(bomba_encontrada) | Tile::BombaEspecial(bomba_encontrada)) => {
-                            jugar_turno(mapa, bomba_encontrada.x, bomba_encontrada.y);
+                            let _ = jugar_turno(mapa, bomba_encontrada.x, bomba_encontrada.y);
                         }
                         _ => continue,
                     }
                 }
-            }
-            _ => (),
+                return Ok(());
+            }   
+            _ => return Err("No hay bomba en esa posicion"),
         }
     }
+    return Err("No hay bomba en esa posicion");
 }
