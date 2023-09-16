@@ -1,4 +1,3 @@
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Obstaculo {
     pub x: usize,
@@ -7,7 +6,13 @@ pub struct Obstaculo {
 }
 
 impl Obstaculo {
+    /// Crea un obstaculo.
+    /// Si pasable=true, el obstaculo va a poder ser sorteado por bombas especiales, caso contrario no.
     pub fn crear(x: usize, y: usize, pasable: bool) -> Obstaculo {
-        Obstaculo {x: x, y: y, pasable: pasable}
+        Obstaculo {
+            x: x,
+            y: y,
+            pasable: pasable,
+        }
     }
 }

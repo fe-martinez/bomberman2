@@ -1,9 +1,13 @@
-use std::{io::{BufReader, BufRead}, fs::{File, self}};
-use crate::modelo::{mapa::Mapa, tile::Tile};
 use crate::modelo::fabrica::crear_pieza;
+use crate::modelo::{mapa::Mapa, tile::Tile};
+use std::{
+    fs::{self, File},
+    io::{BufRead, BufReader},
+};
 
-pub fn read_map(path: &str) -> std::io::Lines<BufReader<File>>{
-    let file = match File::open(path){
+/// Lee el archivo de texto en la ruta especificada y devuelve un iterador de lineas.
+pub fn read_map(path: &str) -> std::io::Lines<BufReader<File>> {
+    let file = match File::open(path) {
         Err(why) => panic!("No se pudo abrir el archivo: {why}"),
         Ok(file) => file,
     };
@@ -12,7 +16,8 @@ pub fn read_map(path: &str) -> std::io::Lines<BufReader<File>>{
     reader.lines()
 }
 
-pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()>{
+/// Imprime el mapa en un archivo de texto.
+pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()> {
     let mut string: String = String::new();
     for v in mapa.tiles.iter() {
         for t in v.iter() {
@@ -22,7 +27,9 @@ pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()>{
                 Tile::BombaEspecial(bomba) => string.push_str(format!("S{}", bomba.radio).as_str()),
                 Tile::Piedra(_) => string.push_str("R"),
                 Tile::Pared(_) => string.push_str("W"),
-                Tile::Desvio(desvio) => string.push_str(format!("D{}", desvio.char_direccion()).as_str()),
+                Tile::Desvio(desvio) => {
+                    string.push_str(format!("D{}", desvio.char_direccion()).as_str())
+                }
                 Tile::Vacio => string.push_str("_"),
             }
             string.push_str(" ");
@@ -51,33 +58,35 @@ pub fn print_mapa_debug(mapa: &Mapa) {
     }
 }
 
+/// Transforma una linea de texto en un vector de tiles.
 fn transformar_linea(s: String, y_pos: usize) -> Vec<Tile> {
     let caracteres: Vec<&str> = s.split(' ').collect();
     let mut x_pos = 0;
 
     let mut tiles: Vec<Tile> = Vec::new();
 
-    for caracter in caracteres{
+    for caracter in caracteres {
         tiles.push(crear_pieza(caracter, x_pos, y_pos));
         x_pos += 1;
     }
     tiles
 }
 
+/// Transforma un archivo de texto en un mapa.
 pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
     let lineas = read_map(path);
-    let mut mapa = Mapa{
+    let mut mapa = Mapa {
         tiles: Vec::new(),
         side_size: 0,
     };
     let mut y_pos: usize = 0;
 
-    for linea in lineas{
-        match linea{
+    for linea in lineas {
+        match linea {
             Err(why) => {
                 println!("No se pudo leer la linea: {why}");
                 return None;
-            },
+            }
             Ok(linea) => {
                 let tiles_temp = transformar_linea(linea, y_pos);
                 if mapa.side_size == 0 {
@@ -89,13 +98,16 @@ pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
         };
     }
 
-    println!("Se transformo el archivo a mapa, side size: {}", mapa.side_size);
+    println!(
+        "Se transformo el archivo a mapa, side size: {}",
+        mapa.side_size
+    );
     return Some(mapa);
 }
 
 #[cfg(test)]
 mod test {
-    use crate::modelo::{enemigo::Enemigo, bomba::Bomba, obstaculo::Obstaculo};
+    use crate::modelo::{bomba::Bomba, enemigo::Enemigo, obstaculo::Obstaculo};
 
     use super::*;
 
@@ -121,9 +133,15 @@ mod test {
         assert_eq!(mapa.tiles[0][0], Tile::Enemigo(Enemigo::crear(0, 0, 1)));
         assert_eq!(mapa.tiles[0][1], Tile::Vacio);
         assert_eq!(mapa.tiles[0][2], Tile::Vacio);
-        assert_eq!(mapa.tiles[0][3], Tile::BombaNormal(Bomba::crear(3, 0, 3, false)));
+        assert_eq!(
+            mapa.tiles[0][3],
+            Tile::BombaNormal(Bomba::crear(3, 0, 3, false))
+        );
         assert_eq!(mapa.tiles[0][4], Tile::Vacio);
-        assert_eq!(mapa.tiles[0][5], Tile::Piedra(Obstaculo::crear(5, 0, false)));
+        assert_eq!(
+            mapa.tiles[0][5],
+            Tile::Piedra(Obstaculo::crear(5, 0, false))
+        );
         assert_eq!(mapa.tiles[0][6], Tile::Pared(Obstaculo::crear(6, 0, true)));
     }
 
@@ -134,5 +152,4 @@ mod test {
         let mapa_test = transformar_a_mapa("mapas/mapa1_test.txt").unwrap();
         assert_eq!(mapa, mapa_test);
     }
-
 }

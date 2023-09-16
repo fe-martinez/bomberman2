@@ -1,7 +1,7 @@
-use archivos::{print_mapa_to_file, print_mapa_debug};
+use archivos::{print_mapa_debug, print_mapa_to_file};
 
-mod modelo;
 pub mod archivos;
+mod modelo;
 mod turno;
 
 fn main() {
@@ -43,7 +43,7 @@ fn main() {
         }
         Ok(_) => (),
     }
+    print_mapa_debug(&mapa);
 
-
-    print_mapa_to_file(&mapa, &args[2]).unwrap();
+    let _ = print_mapa_to_file(&mapa, &args[2]);
 }

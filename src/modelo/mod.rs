@@ -1,8 +1,8 @@
-pub mod mapa;
-pub mod tile;
-pub mod fabrica;
-pub mod enemigo;
 pub mod bomba;
-pub mod desvio;
-pub mod obstaculo;
 pub mod coordenada;
+pub mod desvio;
+pub mod enemigo;
+pub mod fabrica;
+pub mod mapa;
+pub mod obstaculo;
+pub mod tile;
