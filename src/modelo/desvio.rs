@@ -1,5 +1,5 @@
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Desvio {
     pub x: usize,
     pub y: usize,
@@ -7,7 +7,7 @@ pub struct Desvio {
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Direccion {
     Arriba,
     Abajo,

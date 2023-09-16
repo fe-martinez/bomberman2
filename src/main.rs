@@ -46,8 +46,4 @@ fn main() {
 
 
     print_mapa_to_file(&mapa, &args[2]).unwrap();
-
-    
-
-
 }

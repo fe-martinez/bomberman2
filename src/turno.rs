@@ -175,3 +175,34 @@ pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &s
     }
     return Err("No hay bomba en esa posicion");
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::modelo::{tile::Tile, mapa::Mapa, coordenada::Coordenada};
+
+    #[test]
+    fn test_chequear_tile() {
+        let mapa = Mapa {
+            tiles: vec![vec![Tile::Vacio, Tile::Vacio], vec![Tile::Vacio, Tile::Vacio]],
+            side_size: 2,
+        };
+        assert_eq!(chequear_tile(0, 0, &mapa, false), Some(&Tile::Vacio));
+        assert_eq!(chequear_tile(1, 0, &mapa, false), Some(&Tile::Vacio));
+        assert_eq!(chequear_tile(0, 1, &mapa, false), Some(&Tile::Vacio));
+        assert_eq!(chequear_tile(1, 1, &mapa, false), Some(&Tile::Vacio));
+        assert_eq!(chequear_tile(2, 2, &mapa, false), None);
+    }
+
+    #[test]
+    fn test_buscar_arriba() {
+        let mapa = Mapa {
+            tiles: vec![vec![Tile::Vacio, Tile::Vacio], vec![Tile::Vacio, Tile::Vacio]],
+            side_size: 2,
+        };
+        let tiles = buscar_arriba(&mapa, 0, 1, 1, false);
+        assert_eq!(tiles.len(), 1);
+        assert_eq!(tiles[0], Coordenada {x: 0, y: 0});
+
+    }
+} 

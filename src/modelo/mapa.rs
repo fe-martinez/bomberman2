@@ -1,6 +1,6 @@
 use super::tile::Tile;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Mapa {
     pub tiles: Vec<Vec<Tile>>,
     pub side_size: usize,
@@ -40,4 +40,48 @@ impl Mapa {
             }
         }
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_mapa_obtener_tile() {
+        let mapa = Mapa {
+            tiles: vec![vec![Tile::Vacio, Tile::Vacio], vec![Tile::Vacio, Tile::Vacio]],
+            side_size: 2,
+        };
+        assert_eq!(mapa.obtener_tile(0, 0), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 0), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(0, 1), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 1), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(2, 2), None);
+    }
+
+    #[test]
+    fn test_mapa_obtener_tile_mut() {
+        let mut mapa = Mapa {
+            tiles: vec![vec![Tile::Vacio, Tile::Vacio], vec![Tile::Vacio, Tile::Vacio]],
+            side_size: 2,
+        };
+        assert_eq!(mapa.obtener_tile_mut(0, 0), Some(&mut Tile::Vacio));
+        assert_eq!(mapa.obtener_tile_mut(1, 0), Some(&mut Tile::Vacio));
+        assert_eq!(mapa.obtener_tile_mut(0, 1), Some(&mut Tile::Vacio));
+        assert_eq!(mapa.obtener_tile_mut(1, 1), Some(&mut Tile::Vacio));
+        assert_eq!(mapa.obtener_tile_mut(2, 2), None);
+    }
+
+    #[test]
+    fn test_mapa_destruir_tile() {
+        let mut mapa = Mapa {
+            tiles: vec![vec![Tile::Vacio, Tile::Vacio], vec![Tile::Vacio, Tile::Vacio]],
+            side_size: 2,
+        };
+        mapa.destruir_tile(0, 0);
+        assert_eq!(mapa.obtener_tile(0, 0), Some(&Tile::Vacio));
+        mapa.destruir_tile(1, 0);
+        assert_eq!(mapa.obtener_tile(1, 0), Some(&Tile::Vacio));
+        mapa.destruir_tile(0, 1);
+        assert_eq!(mapa.obtener_tile(0, 1), Some(&Tile::Vacio));}
 }

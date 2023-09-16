@@ -92,3 +92,47 @@ pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
     println!("Se transformo el archivo a mapa, side size: {}", mapa.side_size);
     return Some(mapa);
 }
+
+#[cfg(test)]
+mod test {
+    use crate::modelo::{enemigo::Enemigo, bomba::Bomba, obstaculo::Obstaculo};
+
+    use super::*;
+
+    #[test]
+    fn test_transformar_linea() {
+        let linea = "F1 _ _ B3 _ R W".to_string();
+        let tiles = transformar_linea(linea, 0);
+        assert_eq!(tiles.len(), 7);
+        assert_eq!(tiles[0], Tile::Enemigo(Enemigo::crear(0, 0, 1)));
+        assert_eq!(tiles[1], Tile::Vacio);
+        assert_eq!(tiles[2], Tile::Vacio);
+        assert_eq!(tiles[3], Tile::BombaNormal(Bomba::crear(3, 0, 3, false)));
+        assert_eq!(tiles[4], Tile::Vacio);
+        assert_eq!(tiles[5], Tile::Piedra(Obstaculo::crear(5, 0, false)));
+        assert_eq!(tiles[6], Tile::Pared(Obstaculo::crear(6, 0, true)));
+    }
+
+    #[test]
+    fn test_transformar_a_mapa() {
+        let mapa = transformar_a_mapa("mapas/mapa1.txt").unwrap();
+        assert_eq!(mapa.side_size, 7);
+        assert_eq!(mapa.tiles.len(), 1);
+        assert_eq!(mapa.tiles[0][0], Tile::Enemigo(Enemigo::crear(0, 0, 1)));
+        assert_eq!(mapa.tiles[0][1], Tile::Vacio);
+        assert_eq!(mapa.tiles[0][2], Tile::Vacio);
+        assert_eq!(mapa.tiles[0][3], Tile::BombaNormal(Bomba::crear(3, 0, 3, false)));
+        assert_eq!(mapa.tiles[0][4], Tile::Vacio);
+        assert_eq!(mapa.tiles[0][5], Tile::Piedra(Obstaculo::crear(5, 0, false)));
+        assert_eq!(mapa.tiles[0][6], Tile::Pared(Obstaculo::crear(6, 0, true)));
+    }
+
+    #[test]
+    fn test_print_mapa_to_file() {
+        let mapa = transformar_a_mapa("mapas/mapa1.txt").unwrap();
+        print_mapa_to_file(&mapa, "mapas/mapa1_test.txt").unwrap();
+        let mapa_test = transformar_a_mapa("mapas/mapa1_test.txt").unwrap();
+        assert_eq!(mapa, mapa_test);
+    }
+
+}
