@@ -12,12 +12,14 @@ fn main() {
         return;
     }
 
+    
+
     let mut mapa = match archivos::transformar_a_mapa(&args[1]) {
-        None => {
-            println!("No se pudo transformar el archivo a mapa");
+        Err(why) => {
+            println!("No se pudo transformar el archivo a mapa: {why}");
             return;
         }
-        Some(mapa) => mapa,
+        Ok(mapa) => mapa,
     };
 
     let x_pos = match args[3].parse::<usize>() {

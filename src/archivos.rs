@@ -1,24 +1,22 @@
 use crate::modelo::fabrica::crear_pieza;
 use crate::modelo::{mapa::Mapa, tile::Tile};
+use std::io;
 use std::{
     fs::{self, File},
     io::{BufRead, BufReader},
 };
 
 /// Lee el archivo de texto en la ruta especificada y devuelve un iterador de lineas.
-pub fn read_map(path: &str) -> std::io::Lines<BufReader<File>> {
-    let file = match File::open(path) {
-        Err(why) => panic!("No se pudo abrir el archivo: {why}"),
-        Ok(file) => file,
-    };
-
-    let reader: BufReader<File> = BufReader::new(file);
-    reader.lines()
+pub fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
+    match File::open(path) {
+        Ok(file) => Ok(BufReader::new(file).lines()),
+        Err(_) => Err("No se pudo abrir el archivo"),
+    }
 }
 
 /// Transforma un archivo de texto en un mapa.
-pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
-    let lineas = read_map(path);
+pub fn transformar_a_mapa(path: &str) -> Result<Mapa, &str> {
+    let lineas = read_file(path)?;
     let mut mapa = Mapa {
         tiles: Vec::new(),
         side_size: 0,
@@ -26,18 +24,18 @@ pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
     let mut y_pos: usize = 0;
 
     for linea in lineas {
-        match linea {
-            Err(why) => {
-                println!("No se pudo leer la linea: {why}");
-                return None;
-            }
+        let _ = match linea {
+            Err(_) => Err("No se pudo leer la linea"),
             Ok(linea) => {
-                let tiles_temp = transformar_linea(linea, y_pos);
-                if mapa.side_size == 0 {
-                    mapa.side_size = tiles_temp.len();
-                }
-                mapa.tiles.push(tiles_temp);
-                y_pos += 1;
+                {
+                    let tiles_temp = transformar_linea(linea, y_pos);
+                    if mapa.side_size == 0 {
+                        mapa.side_size = tiles_temp.len();
+                    }
+                    y_pos += 1;
+                    mapa.tiles.push(tiles_temp);
+                };
+                Ok(())
             }
         };
     }
@@ -45,7 +43,7 @@ pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
         "Se transformo el archivo a mapa, side size: {}",
         mapa.side_size
     );
-    Some(mapa)
+    Ok(mapa)
 }
 
 /// Imprime el mapa en un archivo de texto.

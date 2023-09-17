@@ -45,22 +45,20 @@ impl Mapa {
         for _ in 0..alcance {
             x += dx;
             y += dy;
-            if x < 0 || x >= self.side_size as i32 || y < 0 || y >= self.side_size as i32 {
+            if self.esta_fuera_de_rango(x, y) {
                 break;
             }
             match self.chequear_tile(x as usize, y as usize, especial) {
                 None => break,
-                Some(tile) => match tile {
-                    Tile::Desvio(_) => {
-                        let faltante = alcance - tiles.len();
-                        tiles.append(&mut self.desviar(x as usize, y as usize, faltante, especial));
-                        break;
-                    }
-                    _ => tiles.push(Coordenada {
-                        x: x as usize,
-                        y: y as usize,
-                    }),
-                },
+                Some(Tile::Desvio(_)) => {
+                    let faltante = alcance - tiles.len();
+                    tiles.append(&mut self.desviar(x as usize, y as usize, faltante, especial));
+                    break;
+                }
+                Some(_) => tiles.push(Coordenada {
+                    x: x as usize,
+                    y: y as usize,
+                }),
             }
         }
         tiles
@@ -132,6 +130,10 @@ impl Mapa {
                 enemigo.descontar_vida(dmg);
             }
         }
+    }
+
+    pub fn esta_fuera_de_rango(&self, x: i32, y: i32) -> bool {
+        x < 0 || x >= self.side_size as i32 || y < 0 || y >= self.side_size as i32
     }
 }
 

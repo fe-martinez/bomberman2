@@ -25,7 +25,7 @@ impl Bomba {
     }
 
     pub fn registar_impacto(&mut self, x: usize, y: usize) -> bool {
-        return self.enemigos_impactados.insert(Coordenada { x, y });
+        self.enemigos_impactados.insert(Coordenada { x, y })
     }
 
     pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
@@ -34,8 +34,8 @@ impl Bomba {
 
     pub fn coordenadas(&self) -> Coordenada {
         Coordenada {
-            x: self.x.clone(),
-            y: self.y.clone(),
+            x: self.x,
+            y: self.y,
         }
     }
 }

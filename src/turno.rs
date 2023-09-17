@@ -26,32 +26,28 @@ pub fn buscar_tiles(mapa: &Mapa, x_pos: usize, y_pos: usize, bomba: Bomba) -> Ve
 /// Si hay una bomba en esa posicion, destruye la bomba y busca tiles adyacentes, detonando otras bombas que se puedan encontrar en su alcance.
 /// Si dentro del alcance de la bomba hay un enemigo, le descuenta vida.
 pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &str> {
-    if let Some(tile) = mapa.obtener_tile(x_pos, y_pos) {
-        match tile {
-            Tile::BombaNormal(bomba) | Tile::BombaEspecial(bomba) => {
-                let tiles_adyacentes: Vec<Coordenada> = buscar_tiles(mapa, x_pos, y_pos, bomba.clone());
-                mapa.destruir_tile(x_pos, y_pos);
-                for tile in tiles_adyacentes {
-                    match mapa.obtener_tile(tile.x, tile.y) {
-                        Some(Tile::Enemigo(enemigo)) => {
-                            let coor_bomba = Coordenada { x: x_pos, y: y_pos };
-                            mapa.atacar_enemigo(coor_bomba, enemigo.coordenadas(), 1);
-                        }
-                        Some(
-                            Tile::BombaNormal(bomba_encontrada)
-                            | Tile::BombaEspecial(bomba_encontrada),
-                        ) => {
-                            let _ = jugar_turno(mapa, bomba_encontrada.x, bomba_encontrada.y);
-                        }
-                        _ => continue,
+    match mapa.obtener_tile(x_pos, y_pos) {
+        Some(Tile::BombaNormal(bomba)) | Some(Tile::BombaEspecial(bomba)) => {
+            let tiles_adyacentes: Vec<Coordenada> = buscar_tiles(mapa, x_pos, y_pos, bomba.clone());
+            mapa.destruir_tile(x_pos, y_pos);
+
+            for tile in tiles_adyacentes {
+                match mapa.obtener_tile(tile.x, tile.y) {
+                    Some(Tile::Enemigo(enemigo)) => {
+                        let coor_bomba = Coordenada { x: x_pos, y: y_pos };
+                        mapa.atacar_enemigo(coor_bomba, enemigo.coordenadas(), 1);
                     }
+                    Some(Tile::BombaNormal(bomba_encontrada))
+                    | Some(Tile::BombaEspecial(bomba_encontrada)) => {
+                        let _ = jugar_turno(mapa, bomba_encontrada.x, bomba_encontrada.y);
+                    }
+                    _ => continue,
                 }
-                return Ok(());
             }
-            _ => return Err("No hay bomba en esa posicion"),
+            Ok(())
         }
+        _ => Err("No hay bomba en esa posicion"),
     }
-    Err("No hay bomba en esa posicion")
 }
 
 #[cfg(test)]
