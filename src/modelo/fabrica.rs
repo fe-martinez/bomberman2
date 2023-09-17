@@ -1,11 +1,7 @@
 use crate::modelo::tile::Tile;
 
 use super::{
-    bomba::Bomba,
-    desvio::Desvio,
-    enemigo::Enemigo,
-    obstaculo::Obstaculo,
-    direccion::Direccion,
+    bomba::Bomba, desvio::Desvio, direccion::Direccion, enemigo::Enemigo, obstaculo::Obstaculo,
 };
 
 /// Crea una pieza a partir de un string.

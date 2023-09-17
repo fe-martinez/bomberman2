@@ -58,15 +58,20 @@ pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &s
 mod test {
     use super::*;
     use crate::modelo::{
-        bomba::Bomba, coordenada::Coordenada, mapa::Mapa, obstaculo::Obstaculo, tile::Tile,
+        bomba::Bomba, coordenada::Coordenada, desvio::Desvio, direccion::Direccion,
+        enemigo::Enemigo, mapa::Mapa, obstaculo::Obstaculo, tile::Tile,
     };
 
     #[test]
-    fn test_jugar_turno() {
+    fn test_detonar() {
         let mut mapa = Mapa {
             side_size: 3,
             tiles: vec![
-                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+                vec![
+                    Tile::Vacio,
+                    Tile::Enemigo(Enemigo::crear(1, 0, 1)),
+                    Tile::Vacio,
+                ],
                 vec![
                     Tile::Vacio,
                     Tile::BombaNormal(Bomba::crear(1, 1, 2, false)),
@@ -78,6 +83,55 @@ mod test {
         let _ = jugar_turno(&mut mapa, 1, 1);
         assert_eq!(mapa.obtener_tile(1, 1), Some(&Tile::Vacio));
         assert_eq!(mapa.obtener_tile(1, 0), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 2), Some(&Tile::Vacio));
+    }
+
+    #[test]
+    fn test_detonar_radio_mayor_a_len() {
+        let mut mapa = Mapa {
+            side_size: 3,
+            tiles: vec![
+                vec![
+                    Tile::Vacio,
+                    Tile::Enemigo(Enemigo::crear(1, 0, 1)),
+                    Tile::Vacio,
+                ],
+                vec![
+                    Tile::Vacio,
+                    Tile::BombaNormal(Bomba::crear(1, 1, 10, false)),
+                    Tile::Vacio,
+                ],
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+            ],
+        };
+        let _ = jugar_turno(&mut mapa, 1, 1);
+        assert_eq!(mapa.obtener_tile(1, 1), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 0), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 2), Some(&Tile::Vacio));
+    }
+
+    #[test]
+    fn test_detonar_radio_0() {
+        let mut mapa = Mapa {
+            side_size: 3,
+            tiles: vec![
+                vec![
+                    Tile::Vacio,
+                    Tile::Enemigo(Enemigo::crear(1, 0, 1)),
+                    Tile::Vacio,
+                ],
+                vec![
+                    Tile::Vacio,
+                    Tile::BombaNormal(Bomba::crear(1, 1, 0, false)),
+                    Tile::Vacio,
+                ],
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+            ],
+        };
+        let _ = jugar_turno(&mut mapa, 1, 1);
+        assert_ne!(mapa.obtener_tile(1, 0), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 1), Some(&Tile::Vacio));
+        assert_eq!(mapa.obtener_tile(1, 2), Some(&Tile::Vacio));
     }
 
     #[test]
@@ -238,5 +292,62 @@ mod test {
                 Coordenada { x: 0, y: 1 }
             ]
         );
+    }
+
+    #[test]
+    fn test_bomba_pasa_dos_veces_por_enemigo() {
+        let mut mapa = Mapa {
+            side_size: 5,
+            tiles: vec![
+                vec![
+                    Tile::Vacio,
+                    Tile::Desvio(Desvio {
+                        x: 1,
+                        y: 0,
+                        direccion: Direccion::Abajo,
+                    }),
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                ],
+                vec![
+                    Tile::Vacio,
+                    Tile::Enemigo(Enemigo::crear(1, 1, 2)),
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                ],
+                vec![
+                    Tile::Vacio,
+                    Tile::BombaNormal(Bomba::crear(1, 2, 4, false)),
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                ],
+                vec![
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                ],
+                vec![
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                    Tile::Vacio,
+                ],
+            ],
+        };
+
+        let _ = jugar_turno(&mut mapa, 1, 2);
+        let enemigo = mapa.obtener_tile(1, 1).unwrap();
+        let _ = match enemigo {
+            Tile::Enemigo(enemigo) => {
+                assert_eq!(enemigo.vida, 1);
+            }
+            _ => assert_eq!(*enemigo, Tile::Enemigo(Enemigo::crear(1, 1, 2))),
+        };
     }
 }

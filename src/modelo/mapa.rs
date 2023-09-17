@@ -1,4 +1,4 @@
-use super::{coordenada::Coordenada, tile::Tile, direccion};
+use super::{coordenada::Coordenada, direccion, tile::Tile};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Mapa {
@@ -25,7 +25,7 @@ impl Mapa {
         }
         None
     }
-    
+
     /// Devuelve un vector de coordenadas que representan las tiles que se encuentran en el alcance de la bomba.
     /// Si la bomba es especial, puede sortear piedras, caso contrario no.
     /// Si la bomba encuentra un desvio, se desvia en la direccion que indica el desvio.
