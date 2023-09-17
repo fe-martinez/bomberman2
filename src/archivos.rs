@@ -16,6 +16,38 @@ pub fn read_map(path: &str) -> std::io::Lines<BufReader<File>> {
     reader.lines()
 }
 
+/// Transforma un archivo de texto en un mapa.
+pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
+    let lineas = read_map(path);
+    let mut mapa = Mapa {
+        tiles: Vec::new(),
+        side_size: 0,
+    };
+    let mut y_pos: usize = 0;
+
+    for linea in lineas {
+        match linea {
+            Err(why) => {
+                println!("No se pudo leer la linea: {why}");
+                return None;
+            }
+            Ok(linea) => {
+                let tiles_temp = transformar_linea(linea, y_pos);
+                if mapa.side_size == 0 {
+                    mapa.side_size = tiles_temp.len();
+                }
+                mapa.tiles.push(tiles_temp);
+                y_pos += 1;
+            }
+        };
+    }
+    println!(
+        "Se transformo el archivo a mapa, side size: {}",
+        mapa.side_size
+    );
+    Some(mapa)
+}
+
 /// Imprime el mapa en un archivo de texto.
 pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()> {
     let mut string: String = String::new();
@@ -68,39 +100,6 @@ fn transformar_linea(s: String, y_pos: usize) -> Vec<Tile> {
         tiles.push(crear_pieza(caracter, x_pos, y_pos));
     }
     tiles
-}
-
-/// Transforma un archivo de texto en un mapa.
-pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
-    let lineas = read_map(path);
-    let mut mapa = Mapa {
-        tiles: Vec::new(),
-        side_size: 0,
-    };
-    let mut y_pos: usize = 0;
-
-    for linea in lineas {
-        match linea {
-            Err(why) => {
-                println!("No se pudo leer la linea: {why}");
-                return None;
-            }
-            Ok(linea) => {
-                let tiles_temp = transformar_linea(linea, y_pos);
-                if mapa.side_size == 0 {
-                    mapa.side_size = tiles_temp.len();
-                }
-                mapa.tiles.push(tiles_temp);
-                y_pos += 1;
-            }
-        };
-    }
-
-    println!(
-        "Se transformo el archivo a mapa, side size: {}",
-        mapa.side_size
-    );
-    Some(mapa)
 }
 
 #[cfg(test)]

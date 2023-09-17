@@ -1,6 +1,4 @@
-use crate::modelo::desvio;
-
-use super::{coordenada::Coordenada, tile::Tile};
+use super::{coordenada::Coordenada, tile::Tile, direccion};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Mapa {
@@ -77,16 +75,16 @@ impl Mapa {
     ) -> Vec<Coordenada> {
         if let Some(Tile::Desvio(desvio)) = self.obtener_tile(x_pos, y_pos) {
             match desvio.direccion {
-                desvio::Direccion::Arriba => {
+                direccion::Direccion::Arriba => {
                     return self.buscar_en_direccion(x_pos, y_pos - 1, alcance, especial, 0, -1);
                 }
-                desvio::Direccion::Abajo => {
+                direccion::Direccion::Abajo => {
                     return self.buscar_en_direccion(x_pos, y_pos + 1, alcance, especial, 0, 1);
                 }
-                desvio::Direccion::Izquierda => {
+                direccion::Direccion::Izquierda => {
                     return self.buscar_en_direccion(x_pos - 1, y_pos, alcance, especial, -1, 0);
                 }
-                desvio::Direccion::Derecha => {
+                direccion::Direccion::Derecha => {
                     return self.buscar_en_direccion(x_pos + 1, y_pos, alcance, especial, 1, 0);
                 }
             }

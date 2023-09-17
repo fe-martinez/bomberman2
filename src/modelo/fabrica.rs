@@ -2,9 +2,10 @@ use crate::modelo::tile::Tile;
 
 use super::{
     bomba::Bomba,
-    desvio::{Desvio, Direccion},
+    desvio::Desvio,
     enemigo::Enemigo,
     obstaculo::Obstaculo,
+    direccion::Direccion,
 };
 
 /// Crea una pieza a partir de un string.
@@ -48,7 +49,8 @@ pub fn crear_pieza(s: &str, x_pos: usize, y_pos: usize) -> Tile {
 
 #[cfg(test)]
 mod test {
-    use crate::modelo::desvio::{Desvio, Direccion};
+    use crate::modelo::desvio::Desvio;
+    use crate::modelo::direccion::Direccion;
     use crate::modelo::tile::Tile;
     use crate::modelo::{bomba::Bomba, enemigo::Enemigo, obstaculo::Obstaculo};
 
