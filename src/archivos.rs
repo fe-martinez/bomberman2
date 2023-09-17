@@ -1,12 +1,14 @@
 use crate::modelo::fabrica::crear_pieza;
 use crate::modelo::{mapa::Mapa, tile::Tile};
-use std::io;
+use std::io::{self, Write};
+use std::path::PathBuf;
 use std::{
     fs::{self, File},
     io::{BufRead, BufReader},
 };
 
 /// Lee el archivo de texto en la ruta especificada y devuelve un iterador de lineas.
+/// Si no se pudo abrir el archivo, devuelve un error.
 pub fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
     match File::open(path) {
         Ok(file) => Ok(BufReader::new(file).lines()),
@@ -15,6 +17,7 @@ pub fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
 }
 
 /// Transforma un archivo de texto en un mapa.
+/// Si no se pudo transformar el archivo, devuelve un error.
 pub fn transformar_a_mapa(path: &str) -> Result<Mapa, &str> {
     let lineas = read_file(path)?;
     let mut mapa = Mapa {
@@ -33,21 +36,30 @@ pub fn transformar_a_mapa(path: &str) -> Result<Mapa, &str> {
                         mapa.side_size = tiles_temp.len();
                     }
                     y_pos += 1;
+                    if tiles_temp.len() != mapa.side_size {
+                        return Err("El mapa no es cuadrado");
+                    }
                     mapa.tiles.push(tiles_temp);
                 };
                 Ok(())
             }
         };
     }
-    println!(
-        "Se transformo el archivo a mapa, side size: {}",
-        mapa.side_size
-    );
     Ok(mapa)
 }
 
+pub fn open_path(string: &str, filename: &str) -> io::Result<PathBuf>{
+    let file_path = PathBuf::from(string);
+    let mut directorio = std::env::current_dir()?;
+    directorio.push(file_path);
+    fs::create_dir(directorio.clone())?;
+
+    directorio.push(filename);
+    Ok(directorio)
+}
+
 /// Imprime el mapa en un archivo de texto.
-pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()> {
+pub fn print_mapa_to_file(mapa: &Mapa, path: PathBuf) -> std::io::Result<()> {
     let mut string: String = String::new();
     for v in mapa.tiles.iter() {
         for t in v.iter() {
@@ -66,7 +78,9 @@ pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()> {
         }
         string.push('\n');
     }
-    fs::write(path, string)?;
+    
+    let mut file = File::create(path)?;
+    file.write(string.as_bytes())?;
     Ok(())
 }
 
@@ -143,7 +157,7 @@ mod test {
     #[test]
     fn test_print_mapa_to_file() {
         let mapa = transformar_a_mapa("mapas/mapa1.txt").unwrap();
-        print_mapa_to_file(&mapa, "mapas/mapa1_test.txt").unwrap();
+        print_mapa_to_file(&mapa, "mapas/mapa1_test.txt".into()).unwrap();
         let mapa_test = transformar_a_mapa("mapas/mapa1_test.txt").unwrap();
         assert_eq!(mapa, mapa_test);
     }

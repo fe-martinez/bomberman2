@@ -12,8 +12,6 @@ fn main() {
         return;
     }
 
-    
-
     let mut mapa = match archivos::transformar_a_mapa(&args[1]) {
         Err(why) => {
             println!("No se pudo transformar el archivo a mapa: {why}");
@@ -21,6 +19,16 @@ fn main() {
         }
         Ok(mapa) => mapa,
     };
+
+    let printprint = match archivos::open_path(&args[2], &args[1]) {
+        Err(why) => {
+            println!("No se pudo abrir el archivo: {why}");
+            return;
+        }
+        Ok(printprint) => printprint,
+    };
+
+    println!("{}", printprint.display());
 
     let x_pos = match args[3].parse::<usize>() {
         Err(why) => {
@@ -44,5 +52,8 @@ fn main() {
     }
     print_mapa_debug(&mapa);
 
-    let _ = print_mapa_to_file(&mapa, &args[2]);
+    let resultado = print_mapa_to_file(&mapa, printprint);
+
+    println!("{:?}", resultado);
+
 }
