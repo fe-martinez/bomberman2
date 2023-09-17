@@ -14,9 +14,9 @@ impl Enemigo {
     /// Crea un enemigo.
     pub fn crear(x: usize, y: usize, vida: u32) -> Enemigo {
         Enemigo {
-            x: x,
-            y: y,
-            vida: vida,
+            x,
+            y,
+            vida,
             bombas_impactadas: HashSet::new(),
         }
     }
@@ -33,12 +33,12 @@ impl Enemigo {
 
     /// Agrega una bomba al set de bombas que ya impactaron en este turno.
     pub fn recibir_impacto(&mut self, x: usize, y: usize) {
-        self.bombas_impactadas.insert(Coordenada { x: x, y: y });
+        self.bombas_impactadas.insert(Coordenada { x, y });
     }
 
     /// Devuelve true si la bomba ya impacto en este turno, caso contrario false.
     pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
-        self.bombas_impactadas.contains(&Coordenada { x: x, y: y })
+        self.bombas_impactadas.contains(&Coordenada { x, y })
     }
 }
 

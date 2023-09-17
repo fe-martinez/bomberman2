@@ -25,19 +25,19 @@ pub fn print_mapa_to_file(mapa: &Mapa, path: &str) -> std::io::Result<()> {
                 Tile::Enemigo(enemigo) => string.push_str(format!("F{}", enemigo.vida).as_str()),
                 Tile::BombaNormal(bomba) => string.push_str(format!("B{}", bomba.radio).as_str()),
                 Tile::BombaEspecial(bomba) => string.push_str(format!("S{}", bomba.radio).as_str()),
-                Tile::Piedra(_) => string.push_str("R"),
-                Tile::Pared(_) => string.push_str("W"),
+                Tile::Piedra(_) => string.push('R'),
+                Tile::Pared(_) => string.push('W'),
                 Tile::Desvio(desvio) => {
                     string.push_str(format!("D{}", desvio.char_direccion()).as_str())
                 }
-                Tile::Vacio => string.push_str("_"),
+                Tile::Vacio => string.push('_'),
             }
-            string.push_str(" ");
+            string.push(' ');
         }
-        string.push_str("\n");
+        string.push('\n');
     }
     fs::write(path, string)?;
-    return Ok(());
+    Ok(())
 }
 
 pub fn print_mapa_debug(mapa: &Mapa) {
@@ -54,20 +54,18 @@ pub fn print_mapa_debug(mapa: &Mapa) {
             }
             print!(" ");
         }
-        print!("\n");
+        println!()
     }
 }
 
 /// Transforma una linea de texto en un vector de tiles.
 fn transformar_linea(s: String, y_pos: usize) -> Vec<Tile> {
-    let caracteres: Vec<&str> = s.split(' ').collect();
-    let mut x_pos = 0;
-
+    let caracteres: Vec<&str> = s.split(' ').filter(|x| !x.is_empty()).collect();
+    println!("Caracteres: {:?}", caracteres);
     let mut tiles: Vec<Tile> = Vec::new();
 
-    for caracter in caracteres {
+    for (x_pos, caracter) in caracteres.into_iter().enumerate() {
         tiles.push(crear_pieza(caracter, x_pos, y_pos));
-        x_pos += 1;
     }
     tiles
 }
@@ -102,7 +100,7 @@ pub fn transformar_a_mapa(path: &str) -> Option<Mapa> {
         "Se transformo el archivo a mapa, side size: {}",
         mapa.side_size
     );
-    return Some(mapa);
+    Some(mapa)
 }
 
 #[cfg(test)]

@@ -1,4 +1,6 @@
-use super::tile::Tile;
+use crate::modelo::desvio;
+
+use super::{coordenada::Coordenada, tile::Tile};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Mapa {
@@ -6,13 +8,98 @@ pub struct Mapa {
     pub side_size: usize,
 }
 
+trait EstrategiaBusqueda {
+    fn buscar(&self, x_pos: usize, y_pos: usize, alcance: usize, especial: bool)
+        -> Vec<Coordenada>;
+}
+
 impl Mapa {
+    /// Devuelve un tile si es que se cumplen las condiciones correctas:
+    ///   - La tile existe.
+    ///   - Si la tile no es una pared.
+    ///   - Si la tile es una roca y especial fue seteado en false.
+    fn chequear_tile(&self, x_pos: usize, y_pos: usize, especial: bool) -> Option<&Tile> {
+        if let Some(tile) = self.obtener_tile(x_pos, y_pos) {
+            if matches!(tile, Tile::Piedra(_)) && !especial | matches!(tile, Tile::Pared(_)) {
+                return None;
+            }
+            return Some(tile);
+        }
+        None
+    }
+    
+    /// Devuelve un vector de coordenadas que representan las tiles que se encuentran en el alcance de la bomba.
+    /// Si la bomba es especial, puede sortear piedras, caso contrario no.
+    /// Si la bomba encuentra un desvio, se desvia en la direccion que indica el desvio.
+    /// Busca desde la posicion de la bomba en direccion a la recta indicada por el vector (dx, dy).
+    pub fn buscar_en_direccion(
+        &self,
+        x_pos: usize,
+        y_pos: usize,
+        alcance: usize,
+        especial: bool,
+        dx: i32,
+        dy: i32,
+    ) -> Vec<Coordenada> {
+        let mut tiles: Vec<Coordenada> = Vec::new();
+        let mut x = x_pos as i32;
+        let mut y = y_pos as i32;
+        for _ in 0..alcance {
+            x += dx;
+            y += dy;
+            if x < 0 || x >= self.side_size as i32 || y < 0 || y >= self.side_size as i32 {
+                break;
+            }
+            match self.chequear_tile(x as usize, y as usize, especial) {
+                None => break,
+                Some(tile) => match tile {
+                    Tile::Desvio(_) => {
+                        let faltante = alcance - tiles.len();
+                        tiles.append(&mut self.desviar(x as usize, y as usize, faltante, especial));
+                        break;
+                    }
+                    _ => tiles.push(Coordenada {
+                        x: x as usize,
+                        y: y as usize,
+                    }),
+                },
+            }
+        }
+        tiles
+    }
+
+    fn desviar(
+        &self,
+        x_pos: usize,
+        y_pos: usize,
+        alcance: usize,
+        especial: bool,
+    ) -> Vec<Coordenada> {
+        if let Some(Tile::Desvio(desvio)) = self.obtener_tile(x_pos, y_pos) {
+            match desvio.direccion {
+                desvio::Direccion::Arriba => {
+                    return self.buscar_en_direccion(x_pos, y_pos - 1, alcance, especial, 0, -1);
+                }
+                desvio::Direccion::Abajo => {
+                    return self.buscar_en_direccion(x_pos, y_pos + 1, alcance, especial, 0, 1);
+                }
+                desvio::Direccion::Izquierda => {
+                    return self.buscar_en_direccion(x_pos - 1, y_pos, alcance, especial, -1, 0);
+                }
+                desvio::Direccion::Derecha => {
+                    return self.buscar_en_direccion(x_pos + 1, y_pos, alcance, especial, 1, 0);
+                }
+            }
+        }
+        Vec::new()
+    }
+
     /// Devuelve la referencia al tile en la posicion (x_pos, y_pos) si existe, caso contrario None.
     pub fn obtener_tile(&self, x_pos: usize, y_pos: usize) -> Option<&Tile> {
         if x_pos >= self.side_size && y_pos >= self.side_size {
             return None;
         }
-        return Some(&self.tiles[y_pos][x_pos]);
+        Some(&self.tiles[y_pos][x_pos])
     }
 
     /// Devuelve la referencia mutable al tile en la posicion (x_pos, y_pos) si existe, caso contrario None.
@@ -20,7 +107,7 @@ impl Mapa {
         if x_pos >= self.side_size && y_pos >= self.side_size {
             return None;
         }
-        return Some(&mut self.tiles[y_pos][x_pos]);
+        Some(&mut self.tiles[y_pos][x_pos])
     }
 
     /// Destruye el tile en la posicion (x_pos, y_pos), poniendo un Tile Vacio en su lugar.
@@ -38,15 +125,13 @@ impl Mapa {
         y_pos: usize,
         dmg: u32,
     ) {
-        if let Some(tile) = self.obtener_tile_mut(x_pos, y_pos) {
-            if let Tile::Enemigo(enemigo) = tile {
-                if !enemigo.ya_impactado(bomba_x, bomba_y) {
-                    if enemigo.vida <= dmg {
-                        self.destruir_tile(x_pos, y_pos);
-                    } else {
-                        enemigo.recibir_impacto(bomba_x, bomba_y);
-                        enemigo.descontar_vida(dmg);
-                    }
+        if let Some(Tile::Enemigo(enemigo)) = self.obtener_tile_mut(x_pos, y_pos) {
+            if !enemigo.ya_impactado(bomba_x, bomba_y) {
+                if enemigo.vida <= dmg {
+                    self.destruir_tile(x_pos, y_pos);
+                } else {
+                    enemigo.recibir_impacto(bomba_x, bomba_y);
+                    enemigo.descontar_vida(dmg);
                 }
             }
         }

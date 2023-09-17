@@ -10,34 +10,19 @@ use super::{
 /// Crea una pieza a partir de un string.
 /// El string debe tener el siguiente formato: <tipo><numero>. Ejemplo: F2, B2, S2, R, W, D2, _.
 pub fn crear_pieza(s: &str, x_pos: usize, y_pos: usize) -> Tile {
-    let primer_caracter = s.chars().nth(0);
-    let segundo_caracter = s.chars().nth(1);
+    let primer_caracter = s.chars().next();
+    let numero = match s.chars().nth(1) {
+        None => 1,
+        Some(numero) => numero.to_digit(10).unwrap_or(1),
+    };
 
     let tile = match primer_caracter {
-        Some('F') => match segundo_caracter {
-            None => Tile::Enemigo(Enemigo::crear(x_pos, y_pos, 1)),
-            Some(numero) => match numero.to_digit(10) {
-                None => Tile::Vacio,
-                Some(numero) => Tile::Enemigo(Enemigo::crear(x_pos, y_pos, numero)),
-            },
-        },
-        Some('B') => match segundo_caracter {
-            None => Tile::Vacio,
-            Some(numero) => match numero.to_digit(10) {
-                None => Tile::Vacio,
-                Some(numero) => Tile::BombaNormal(Bomba::crear(x_pos, y_pos, numero, false)),
-            },
-        },
-        Some('S') => match segundo_caracter {
-            None => Tile::Vacio,
-            Some(numero) => match numero.to_digit(10) {
-                None => Tile::Vacio,
-                Some(numero) => Tile::BombaEspecial(Bomba::crear(x_pos, y_pos, numero, true)),
-            },
-        },
+        Some('F') => Tile::Enemigo(Enemigo::crear(x_pos, y_pos, numero)),
+        Some('B') => Tile::BombaNormal(Bomba::crear(x_pos, y_pos, numero, false)),
+        Some('S') => Tile::BombaEspecial(Bomba::crear(x_pos, y_pos, numero, true)),
         Some('R') => Tile::Piedra(Obstaculo::crear(x_pos, y_pos, false)),
         Some('W') => Tile::Pared(Obstaculo::crear(x_pos, y_pos, true)),
-        Some('D') => match segundo_caracter {
+        Some('D') => match s.chars().nth(1) {
             None => Tile::Vacio,
             Some(direccion) => {
                 let direccion = match direccion {
@@ -50,7 +35,7 @@ pub fn crear_pieza(s: &str, x_pos: usize, y_pos: usize) -> Tile {
                 Tile::Desvio(Desvio {
                     x: x_pos,
                     y: y_pos,
-                    direccion: direccion,
+                    direccion,
                 })
             }
         },
@@ -58,7 +43,7 @@ pub fn crear_pieza(s: &str, x_pos: usize, y_pos: usize) -> Tile {
         _ => Tile::Vacio,
     };
 
-    return tile;
+    tile
 }
 
 #[cfg(test)]
@@ -76,7 +61,7 @@ mod test {
         assert_eq!(tile, Tile::Enemigo(Enemigo::crear(0, 0, 2)));
 
         let tile = super::crear_pieza("B", 0, 0);
-        assert_eq!(tile, Tile::Vacio);
+        assert_eq!(tile, Tile::BombaNormal(Bomba::crear(0, 0, 1, false)));
 
         let tile = super::crear_pieza("B2", 0, 0);
         assert_eq!(tile, Tile::BombaNormal(Bomba::crear(0, 0, 2, false)));

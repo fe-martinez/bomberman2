@@ -11,10 +11,10 @@ impl Bomba {
     /// Si especial=true, la bomba va a ser capaz de sortear piedras, caso contrario no.
     pub fn crear(x: usize, y: usize, radio: u32, especial: bool) -> Bomba {
         Bomba {
-            x: x,
-            y: y,
-            radio: radio,
-            especial: especial,
+            x,
+            y,
+            radio,
+            especial,
         }
     }
 }

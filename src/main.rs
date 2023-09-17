@@ -36,12 +36,9 @@ fn main() {
     };
 
     print_mapa_debug(&mapa);
-    match turno::jugar_turno(&mut mapa, x_pos, y_pos) {
-        Err(why) => {
-            println!("No se pudo jugar el turno: {why}");
-            return;
-        }
-        Ok(_) => (),
+    if let Err(why) = turno::jugar_turno(&mut mapa, x_pos, y_pos) {
+        println!("No se pudo jugar el turno: {why}");
+        return;
     }
     print_mapa_debug(&mapa);
 
