@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use super::coordenada::Coordenada;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -7,18 +5,12 @@ pub struct Enemigo {
     pub x: usize,
     pub y: usize,
     pub vida: u32,
-    pub bombas_impactadas: HashSet<Coordenada>,
 }
 
 impl Enemigo {
     /// Crea un enemigo.
     pub fn crear(x: usize, y: usize, vida: u32) -> Enemigo {
-        Enemigo {
-            x,
-            y,
-            vida,
-            bombas_impactadas: HashSet::new(),
-        }
+        Enemigo { x, y, vida }
     }
 
     /// Descuenta vida al enemigo.
@@ -31,14 +23,11 @@ impl Enemigo {
         }
     }
 
-    /// Agrega una bomba al set de bombas que ya impactaron en este turno.
-    pub fn recibir_impacto(&mut self, x: usize, y: usize) {
-        self.bombas_impactadas.insert(Coordenada { x, y });
-    }
-
-    /// Devuelve true si la bomba ya impacto en este turno, caso contrario false.
-    pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
-        self.bombas_impactadas.contains(&Coordenada { x, y })
+    pub fn coordenadas(&self) -> Coordenada {
+        Coordenada {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 
@@ -61,21 +50,5 @@ mod tests {
         assert_eq!(enemigo.vida, 1);
         enemigo.descontar_vida(1);
         assert_eq!(enemigo.vida, 0);
-    }
-
-    #[test]
-    fn test_enemigo_recibir_impacto() {
-        let mut enemigo = Enemigo::crear(0, 0, 1);
-        enemigo.recibir_impacto(0, 0);
-        assert!(enemigo.ya_impactado(0, 0));
-        assert!(!enemigo.ya_impactado(0, 1));
-    }
-
-    #[test]
-    fn test_enemigo_ya_impactado() {
-        let mut enemigo = Enemigo::crear(0, 0, 1);
-        enemigo.recibir_impacto(0, 0);
-        assert!(enemigo.ya_impactado(0, 0));
-        assert!(!enemigo.ya_impactado(0, 1));
     }
 }

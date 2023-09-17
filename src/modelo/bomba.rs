@@ -1,9 +1,14 @@
+use std::collections::HashSet;
+
+use super::coordenada::Coordenada;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Bomba {
     pub x: usize,
     pub y: usize,
     pub radio: u32,
     pub especial: bool,
+    pub enemigos_impactados: HashSet<Coordenada>,
 }
 
 impl Bomba {
@@ -15,6 +20,22 @@ impl Bomba {
             y,
             radio,
             especial,
+            enemigos_impactados: HashSet::new(),
+        }
+    }
+
+    pub fn registar_impacto(&mut self, x: usize, y: usize) -> bool {
+        return self.enemigos_impactados.insert(Coordenada { x, y });
+    }
+
+    pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
+        self.enemigos_impactados.contains(&Coordenada { x, y })
+    }
+
+    pub fn coordenadas(&self) -> Coordenada {
+        Coordenada {
+            x: self.x.clone(),
+            y: self.y.clone(),
         }
     }
 }

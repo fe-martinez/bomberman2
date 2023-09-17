@@ -115,22 +115,21 @@ impl Mapa {
 
     /// Recibe las coordenadas de una bomba y la posicion que se debe atacar, si hay un enemigo en esa posicion, le descuenta vida.
     /// Si la vida del enemigo es menor o igual a 0, destruye el tile.
-    pub fn atacar_enemigo(
-        &mut self,
-        bomba_x: usize,
-        bomba_y: usize,
-        x_pos: usize,
-        y_pos: usize,
-        dmg: u32,
-    ) {
-        if let Some(Tile::Enemigo(enemigo)) = self.obtener_tile_mut(x_pos, y_pos) {
-            if !enemigo.ya_impactado(bomba_x, bomba_y) {
-                if enemigo.vida <= dmg {
-                    self.destruir_tile(x_pos, y_pos);
-                } else {
-                    enemigo.recibir_impacto(bomba_x, bomba_y);
-                    enemigo.descontar_vida(dmg);
-                }
+    pub fn atacar_enemigo(&mut self, coor_bomba: Coordenada, coor_enemigo: Coordenada, dmg: u32) {
+        if let Some(Tile::BombaNormal(bomba) | Tile::BombaEspecial(bomba)) =
+            self.obtener_tile_mut(coor_bomba.x, coor_bomba.y)
+        {
+            if !bomba.registar_impacto(coor_enemigo.x, coor_enemigo.y) {
+                return;
+            }
+        }
+
+        if let Some(Tile::Enemigo(enemigo)) = self.obtener_tile_mut(coor_enemigo.x, coor_enemigo.y)
+        {
+            if enemigo.vida <= dmg {
+                self.destruir_tile(coor_enemigo.x, coor_enemigo.y);
+            } else {
+                enemigo.descontar_vida(dmg);
             }
         }
     }

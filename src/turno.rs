@@ -29,13 +29,13 @@ pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &s
     if let Some(tile) = mapa.obtener_tile(x_pos, y_pos) {
         match tile {
             Tile::BombaNormal(bomba) | Tile::BombaEspecial(bomba) => {
-                let tiles_adyacentes: Vec<Coordenada> =
-                    buscar_tiles(mapa, x_pos, y_pos, bomba.clone());
+                let tiles_adyacentes: Vec<Coordenada> = buscar_tiles(mapa, x_pos, y_pos, bomba.clone());
                 mapa.destruir_tile(x_pos, y_pos);
                 for tile in tiles_adyacentes {
                     match mapa.obtener_tile(tile.x, tile.y) {
-                        Some(Tile::Enemigo(_)) => {
-                            mapa.atacar_enemigo(x_pos, y_pos, tile.x, tile.y, 1);
+                        Some(Tile::Enemigo(enemigo)) => {
+                            let coor_bomba = Coordenada { x: x_pos, y: y_pos };
+                            mapa.atacar_enemigo(coor_bomba, enemigo.coordenadas(), 1);
                         }
                         Some(
                             Tile::BombaNormal(bomba_encontrada)
