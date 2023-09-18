@@ -24,14 +24,6 @@ impl Bomba {
         }
     }
 
-    pub fn registar_impacto(&mut self, x: usize, y: usize) -> bool {
-        self.enemigos_impactados.insert(Coordenada { x, y })
-    }
-
-    pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
-        self.enemigos_impactados.contains(&Coordenada { x, y })
-    }
-
     pub fn coordenadas(&self) -> Coordenada {
         Coordenada {
             x: self.x,

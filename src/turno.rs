@@ -33,9 +33,8 @@ pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &s
 
             for tile in tiles_adyacentes {
                 match mapa.obtener_tile(tile.x, tile.y) {
-                    Some(Tile::Enemigo(enemigo)) => {
-                        let coor_bomba = Coordenada { x: x_pos, y: y_pos };
-                        mapa.atacar_enemigo(coor_bomba, enemigo.coordenadas(), 1);
+                    Some(Tile::Enemigo(_)) => {
+                        mapa.atacar_enemigo(x_pos, y_pos, tile.x, tile.y, 1);
                     }
                     Some(Tile::BombaNormal(bomba_encontrada))
                     | Some(Tile::BombaEspecial(bomba_encontrada)) => {

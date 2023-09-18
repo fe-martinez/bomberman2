@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use super::coordenada::Coordenada;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -5,12 +7,13 @@ pub struct Enemigo {
     pub x: usize,
     pub y: usize,
     pub vida: u32,
+    pub bombas_impactadas: HashSet<Coordenada>,
 }
 
 impl Enemigo {
     /// Crea un enemigo.
     pub fn crear(x: usize, y: usize, vida: u32) -> Enemigo {
-        Enemigo { x, y, vida }
+        Enemigo { x, y, vida, bombas_impactadas: std::collections::HashSet::new() }
     }
 
     /// Descuenta vida al enemigo.
@@ -28,6 +31,14 @@ impl Enemigo {
             x: self.x,
             y: self.y,
         }
+    }
+
+    pub fn recibir_impacto (&mut self, x: usize, y: usize) {
+        self.bombas_impactadas.insert(Coordenada {x: x, y: y});
+    }
+
+    pub fn ya_impactado (&self, x: usize, y: usize) -> bool {
+        self.bombas_impactadas.contains(&Coordenada {x: x, y: y})
     }
 }
 

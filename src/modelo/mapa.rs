@@ -113,21 +113,18 @@ impl Mapa {
 
     /// Recibe las coordenadas de una bomba y la posicion que se debe atacar, si hay un enemigo en esa posicion, le descuenta vida.
     /// Si la vida del enemigo es menor o igual a 0, destruye el tile.
-    pub fn atacar_enemigo(&mut self, coor_bomba: Coordenada, coor_enemigo: Coordenada, dmg: u32) {
-        if let Some(Tile::BombaNormal(bomba) | Tile::BombaEspecial(bomba)) =
-            self.obtener_tile_mut(coor_bomba.x, coor_bomba.y)
-        {
-            if !bomba.registar_impacto(coor_enemigo.x, coor_enemigo.y) {
-                return;
-            }
-        }
-
-        if let Some(Tile::Enemigo(enemigo)) = self.obtener_tile_mut(coor_enemigo.x, coor_enemigo.y)
-        {
-            if enemigo.vida <= dmg {
-                self.destruir_tile(coor_enemigo.x, coor_enemigo.y);
-            } else {
-                enemigo.descontar_vida(dmg);
+    pub fn atacar_enemigo(&mut self, bomba_x: usize, bomba_y: usize, x_pos: usize, y_pos: usize, dmg: u32) {
+        if let Some(tile) = self.obtener_tile_mut(x_pos, y_pos) {
+            if let Tile::Enemigo(enemigo) = tile {
+                if !enemigo.ya_impactado(bomba_x, bomba_y) {
+                    if enemigo.vida <= dmg {
+                        self.destruir_tile(x_pos, y_pos);
+                    } else {
+                        enemigo.recibir_impacto(bomba_x, bomba_y);
+                        enemigo.descontar_vida(dmg);
+                        
+                    }
+                }
             }
         }
     }
@@ -189,4 +186,21 @@ mod test {
         mapa.destruir_tile(0, 1);
         assert_eq!(mapa.obtener_tile(0, 1), Some(&Tile::Vacio));
     }
+
+    #[test]
+    fn test_buscar_tiles() {
+        let mapa = Mapa {
+            tiles: vec![
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+            ],
+            side_size: 3,
+        };
+        let tiles = mapa.buscar_en_direccion(1, 2, 2, false, 0, -1);
+        assert_eq!(tiles.len(), 2);
+        assert_eq!(tiles[0], Coordenada { x: 1, y: 1 });
+        assert_eq!(tiles[1], Coordenada { x: 1, y: 0 });
+    }
+
 }
