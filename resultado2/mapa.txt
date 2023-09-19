@@ -1,7 +1,1 @@
-_ _ _ _ _ _ _ 
-_ W _ W _ W _ 
-_ R R R F1 _ _ 
-_ W _ W _ W _ 
-_ _ _ _ DU _ _ 
-_ W _ W _ W _ 
-_ _ _ _ _ _ _ 
+No se pudo inicializar la posicion: No se pudo parsear el argumento y: invalid digit found in string

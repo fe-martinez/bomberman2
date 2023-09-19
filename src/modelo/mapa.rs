@@ -6,11 +6,6 @@ pub struct Mapa {
     pub side_size: usize,
 }
 
-trait EstrategiaBusqueda {
-    fn buscar(&self, x_pos: usize, y_pos: usize, alcance: usize, especial: bool)
-        -> Vec<Coordenada>;
-}
-
 impl Mapa {
     /// Devuelve un tile si es que se cumplen las condiciones correctas:
     ///   - La tile existe.
@@ -24,6 +19,10 @@ impl Mapa {
             return Some(tile);
         }
         None
+    }
+
+    fn esta_fuera_de_rango(&self, x: i32, y: i32) -> bool {
+        x < 0 || x >= self.side_size as i32 || y < 0 || y >= self.side_size as i32
     }
 
     /// Devuelve un vector de coordenadas que representan las tiles que se encuentran en el alcance de la bomba.
@@ -92,15 +91,15 @@ impl Mapa {
 
     /// Devuelve la referencia al tile en la posicion (x_pos, y_pos) si existe, caso contrario None.
     pub fn obtener_tile(&self, x_pos: usize, y_pos: usize) -> Option<&Tile> {
-        if x_pos >= self.side_size && y_pos >= self.side_size {
+        if x_pos >= self.side_size || y_pos >= self.side_size {
             return None;
         }
         Some(&self.tiles[y_pos][x_pos])
     }
 
     /// Devuelve la referencia mutable al tile en la posicion (x_pos, y_pos) si existe, caso contrario None.
-    pub fn obtener_tile_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut Tile> {
-        if x_pos >= self.side_size && y_pos >= self.side_size {
+    fn obtener_tile_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut Tile> {
+        if x_pos >= self.side_size || y_pos >= self.side_size {
             return None;
         }
         Some(&mut self.tiles[y_pos][x_pos])
@@ -113,7 +112,14 @@ impl Mapa {
 
     /// Recibe las coordenadas de una bomba y la posicion que se debe atacar, si hay un enemigo en esa posicion, le descuenta vida.
     /// Si la vida del enemigo es menor o igual a 0, destruye el tile.
-    pub fn atacar_enemigo(&mut self, bomba_x: usize, bomba_y: usize, x_pos: usize, y_pos: usize, dmg: u32) {
+    pub fn atacar_enemigo(
+        &mut self,
+        bomba_x: usize,
+        bomba_y: usize,
+        x_pos: usize,
+        y_pos: usize,
+        dmg: u32,
+    ) {
         if let Some(tile) = self.obtener_tile_mut(x_pos, y_pos) {
             if let Tile::Enemigo(enemigo) = tile {
                 if !enemigo.ya_impactado(bomba_x, bomba_y) {
@@ -122,15 +128,10 @@ impl Mapa {
                     } else {
                         enemigo.recibir_impacto(bomba_x, bomba_y);
                         enemigo.descontar_vida(dmg);
-                        
                     }
                 }
             }
         }
-    }
-
-    pub fn esta_fuera_de_rango(&self, x: i32, y: i32) -> bool {
-        x < 0 || x >= self.side_size as i32 || y < 0 || y >= self.side_size as i32
     }
 }
 
@@ -202,5 +203,4 @@ mod test {
         assert_eq!(tiles[0], Coordenada { x: 1, y: 1 });
         assert_eq!(tiles[1], Coordenada { x: 1, y: 0 });
     }
-
 }

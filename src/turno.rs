@@ -30,7 +30,6 @@ pub fn jugar_turno(mapa: &mut Mapa, x_pos: usize, y_pos: usize) -> Result<(), &s
         Some(Tile::BombaNormal(bomba)) | Some(Tile::BombaEspecial(bomba)) => {
             let tiles_adyacentes: Vec<Coordenada> = buscar_tiles(mapa, x_pos, y_pos, bomba.clone());
             mapa.destruir_tile(x_pos, y_pos);
-
             for tile in tiles_adyacentes {
                 match mapa.obtener_tile(tile.x, tile.y) {
                     Some(Tile::Enemigo(_)) => {
@@ -56,6 +55,24 @@ mod test {
         bomba::Bomba, coordenada::Coordenada, desvio::Desvio, direccion::Direccion,
         enemigo::Enemigo, mapa::Mapa, obstaculo::Obstaculo, tile::Tile,
     };
+
+    #[test]
+    fn test_fuera_de_rango() {
+        let mut mapa = Mapa {
+            side_size: 3,
+            tiles: vec![
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+                vec![
+                    Tile::Vacio,
+                    Tile::BombaNormal(Bomba::crear(1, 1, 2, false)),
+                    Tile::Vacio,
+                ],
+                vec![Tile::Vacio, Tile::Vacio, Tile::Vacio],
+            ],
+        };
+        let resultado = jugar_turno(&mut mapa, 3, 3);
+        assert_eq!(resultado, Err("No hay bomba en esa posicion"));
+    }
 
     #[test]
     fn test_detonar() {

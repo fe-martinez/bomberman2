@@ -1,4 +1,4 @@
-use archivos::{print_mapa_debug, print_mapa_to_file};
+use archivos::print_mapa_to_file;
 
 pub mod archivos;
 mod modelo;
@@ -12,48 +12,49 @@ fn main() {
         return;
     }
 
-    let mut mapa = match archivos::transformar_a_mapa(&args[1]) {
+    let output_dir = match archivos::inicializar_output_dir(&args) {
         Err(why) => {
-            println!("No se pudo transformar el archivo a mapa: {why}");
+            println!("No se pudo crear el directorio de salida: {why}");
+            return;
+        }
+        Ok(output_dir) => output_dir,
+    };
+
+    println!("Directorio de salida: {:?}", output_dir);
+
+    let mut mapa = match archivos::inicializar_mapa(&args) {
+        Err(why) => {
+            let _ = archivos::print_err_to_file(
+                format!("No se pudo inicializar el mapa: {why}"),
+                output_dir,
+            );
             return;
         }
         Ok(mapa) => mapa,
     };
 
-    let printprint = match archivos::open_path(&args[2], &args[1]) {
+    let (x_pos, y_pos) = match archivos::inicializar_posicion(&args) {
         Err(why) => {
-            println!("No se pudo abrir el archivo: {why}");
+            let _ = archivos::print_err_to_file(
+                format!("No se pudo inicializar la posicion: {why}"),
+                output_dir,
+            );
             return;
         }
-        Ok(printprint) => printprint,
+        Ok((x_pos, y_pos)) => (x_pos, y_pos),
     };
 
-    println!("{}", printprint.display());
-
-    let x_pos = match args[3].parse::<usize>() {
-        Err(why) => {
-            println!("No se pudo parsear el argumento x: {why}");
-            return;
-        }
-        Ok(x_pos) => x_pos,
-    };
-    let y_pos = match args[4].parse::<usize>() {
-        Err(why) => {
-            println!("No se pudo parsear el argumento y: {why}");
-            return;
-        }
-        Ok(y_pos) => y_pos,
-    };
-
-    print_mapa_debug(&mapa);
     if let Err(why) = turno::jugar_turno(&mut mapa, x_pos, y_pos) {
-        println!("No se pudo jugar el turno: {why}");
+        let _ =
+            archivos::print_err_to_file(format!("No se pudo jugar el turno: {why}"), output_dir);
         return;
     }
-    print_mapa_debug(&mapa);
-
-    let resultado = print_mapa_to_file(&mapa, printprint);
-
-    println!("{:?}", resultado);
-
+    
+    match print_mapa_to_file(&mapa, &output_dir) {
+        Err(why) => {
+            let _  = archivos::print_err_to_file(format!("No se pudo imprimir el mapa: {why}"), output_dir);
+            return;
+        }
+        Ok(_) => (),
+    }
 }

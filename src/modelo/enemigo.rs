@@ -13,7 +13,12 @@ pub struct Enemigo {
 impl Enemigo {
     /// Crea un enemigo.
     pub fn crear(x: usize, y: usize, vida: u32) -> Enemigo {
-        Enemigo { x, y, vida, bombas_impactadas: std::collections::HashSet::new() }
+        Enemigo {
+            x,
+            y,
+            vida,
+            bombas_impactadas: std::collections::HashSet::new(),
+        }
     }
 
     /// Descuenta vida al enemigo.
@@ -33,12 +38,12 @@ impl Enemigo {
         }
     }
 
-    pub fn recibir_impacto (&mut self, x: usize, y: usize) {
-        self.bombas_impactadas.insert(Coordenada {x: x, y: y});
+    pub fn recibir_impacto(&mut self, x: usize, y: usize) {
+        self.bombas_impactadas.insert(Coordenada { x: x, y: y });
     }
 
-    pub fn ya_impactado (&self, x: usize, y: usize) -> bool {
-        self.bombas_impactadas.contains(&Coordenada {x: x, y: y})
+    pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
+        self.bombas_impactadas.contains(&Coordenada { x: x, y: y })
     }
 }
 

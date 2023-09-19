@@ -3,9 +3,41 @@ use crate::modelo::{mapa::Mapa, tile::Tile};
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::{
-    fs::{self, File},
+    fs::File,
     io::{BufRead, BufReader},
 };
+
+pub fn inicializar_mapa(argumentos: &Vec<String>) -> Result<Mapa, String> {
+    match transformar_a_mapa(&argumentos[1]) {
+        Ok(mapa) => Ok(mapa),
+        Err(why) => Err(format!("No se pudo transformar el archivo a mapa: {}", why)),
+    }
+}
+
+pub fn inicializar_output_dir(argumentos: &Vec<String>) -> Result<PathBuf, String> {
+    match open_path(&argumentos[2], &argumentos[1]) {
+        Err(why) => Err(format!("No se pudo abrir el archivo: {}", why)),
+        Ok(output_dir) => {
+            Ok(output_dir)
+        }
+    }
+}
+
+pub fn inicializar_posicion(argumentos: &Vec<String>) -> Result<(usize, usize), String> {
+    let x_pos = match argumentos[3].parse::<usize>() {
+        Err(why) => {
+            return Err(format!("No se pudo parsear el argumento x: {}", why));
+        }
+        Ok(x_pos) => x_pos,
+    };
+    let y_pos = match argumentos[4].parse::<usize>() {
+        Err(why) => {
+            return Err(format!("No se pudo parsear el argumento y: {}", why));
+        }
+        Ok(y_pos) => y_pos,
+    };
+    Ok((x_pos, y_pos))
+}
 
 /// Lee el archivo de texto en la ruta especificada y devuelve un iterador de lineas.
 /// Si no se pudo abrir el archivo, devuelve un error.
@@ -48,18 +80,39 @@ pub fn transformar_a_mapa(path: &str) -> Result<Mapa, &str> {
     Ok(mapa)
 }
 
-pub fn open_path(string: &str, filename: &str) -> io::Result<PathBuf>{
-    let file_path = PathBuf::from(string);
-    let mut directorio = std::env::current_dir()?;
-    directorio.push(file_path);
-    fs::create_dir(directorio.clone())?;
-
-    directorio.push(filename);
-    Ok(directorio)
+pub fn open_path(carpeta: &str, filename: &str) -> io::Result<PathBuf> {
+    let path = PathBuf::from(carpeta);
+    if let Ok(path_relativo) = path.strip_prefix("/") {
+        let mut directorio = std::env::current_dir()?;
+        print!("Directorio: {:?}", directorio);
+        directorio.push(path_relativo);
+        directorio.push(filename);
+        if !directorio.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "No existe el directorio",
+            ))?;
+        } else {
+            return Ok(directorio);
+        }
+    } else {
+        let mut directorio = std::env::current_dir()?;
+        print!("Directorio: {:?}", directorio);
+        directorio.push(path);
+        directorio.push(filename);
+        if !directorio.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "No existe el directorio",
+            ))?;
+        } else {
+            return Ok(directorio);
+        }
+    }
 }
 
 /// Imprime el mapa en un archivo de texto.
-pub fn print_mapa_to_file(mapa: &Mapa, path: PathBuf) -> std::io::Result<()> {
+pub fn print_mapa_to_file(mapa: &Mapa, path: &PathBuf) -> std::io::Result<()> {
     let mut string: String = String::new();
     for v in mapa.tiles.iter() {
         for t in v.iter() {
@@ -78,9 +131,15 @@ pub fn print_mapa_to_file(mapa: &Mapa, path: PathBuf) -> std::io::Result<()> {
         }
         string.push('\n');
     }
-    
+
     let mut file = File::create(path)?;
     file.write(string.as_bytes())?;
+    Ok(())
+}
+
+pub fn print_err_to_file(err: String, path: PathBuf) -> std::io::Result<()> {
+    let mut file = File::create(path)?;
+    file.write(err.as_bytes())?;
     Ok(())
 }
 
@@ -136,9 +195,8 @@ mod test {
 
     #[test]
     fn test_transformar_a_mapa() {
-        let mapa = transformar_a_mapa("mapas/mapa1.txt").unwrap();
+        let mapa = transformar_a_mapa("mapas/mapa_test_crear.txt").unwrap();
         assert_eq!(mapa.side_size, 7);
-        assert_eq!(mapa.tiles.len(), 1);
         assert_eq!(mapa.tiles[0][0], Tile::Enemigo(Enemigo::crear(0, 0, 1)));
         assert_eq!(mapa.tiles[0][1], Tile::Vacio);
         assert_eq!(mapa.tiles[0][2], Tile::Vacio);
@@ -156,9 +214,22 @@ mod test {
 
     #[test]
     fn test_print_mapa_to_file() {
-        let mapa = transformar_a_mapa("mapas/mapa1.txt").unwrap();
-        print_mapa_to_file(&mapa, "mapas/mapa1_test.txt".into()).unwrap();
-        let mapa_test = transformar_a_mapa("mapas/mapa1_test.txt").unwrap();
-        assert_eq!(mapa, mapa_test);
+        let mapa = transformar_a_mapa("mapas/mapa_test_crear.txt").unwrap();
+        let path = PathBuf::from("mapas/mapa_test_crear.txt");
+        let _ = print_mapa_to_file(&mapa, &path);
+        let mapa2 = transformar_a_mapa("mapas/mapa_test_crear.txt").unwrap();
+        assert_eq!(mapa, mapa2);
+    }
+
+    #[test]
+    fn test_abre_directorio_existente() {
+        let path = open_path("mapas", "mapa_test_crear.txt").unwrap();
+        assert_eq!(path.exists(), true);
+    }
+
+    #[test]
+    fn test_no_abre_directorio_no_existente() {
+        let path = open_path("no_mapas", "mapa1.txt");
+        assert_eq!(path.is_err(), true);
     }
 }
