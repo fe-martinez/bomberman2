@@ -120,15 +120,13 @@ impl Mapa {
         y_pos: usize,
         dmg: u32,
     ) {
-        if let Some(tile) = self.obtener_tile_mut(x_pos, y_pos) {
-            if let Tile::Enemigo(enemigo) = tile {
-                if !enemigo.ya_impactado(bomba_x, bomba_y) {
-                    if enemigo.vida <= dmg {
-                        self.destruir_tile(x_pos, y_pos);
-                    } else {
-                        enemigo.recibir_impacto(bomba_x, bomba_y);
-                        enemigo.descontar_vida(dmg);
-                    }
+        if let Some(Tile::Enemigo(enemigo)) = self.obtener_tile_mut(x_pos, y_pos) {
+            if !enemigo.ya_impactado(bomba_x, bomba_y) {
+                if enemigo.vida <= dmg {
+                    self.destruir_tile(x_pos, y_pos);
+                } else {
+                    enemigo.recibir_impacto(bomba_x, bomba_y);
+                    enemigo.descontar_vida(dmg);
                 }
             }
         }

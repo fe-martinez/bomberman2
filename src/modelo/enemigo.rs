@@ -39,11 +39,11 @@ impl Enemigo {
     }
 
     pub fn recibir_impacto(&mut self, x: usize, y: usize) {
-        self.bombas_impactadas.insert(Coordenada { x: x, y: y });
+        self.bombas_impactadas.insert(Coordenada { x, y });
     }
 
     pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
-        self.bombas_impactadas.contains(&Coordenada { x: x, y: y })
+        self.bombas_impactadas.contains(&Coordenada { x, y })
     }
 }
 
