@@ -7,14 +7,15 @@ pub struct Mapa {
 }
 
 impl Mapa {
+
+    /// Crea un mapa completamente vacio.
+    /// Largo=0
     pub fn crear() -> Self {
         Mapa {
             tiles: Vec::new(),
             side_size: 0,
         }
     }
-    
-
     /// Devuelve un tile si es que se cumplen las condiciones correctas:
     ///   - La tile existe.
     ///   - Si la tile no es una pared.
@@ -29,14 +30,17 @@ impl Mapa {
         None
     }
 
+    /// Devuelve si la coordenada esta por fuera del mapa.
     fn esta_fuera_de_rango(&self, x: i32, y: i32) -> bool {
         x < 0 || x >= self.side_size as i32 || y < 0 || y >= self.side_size as i32
     }
 
-    /// Devuelve un vector de coordenadas que representan las tiles que se encuentran en el alcance de la bomba.
+    /// Devuelve un vector de coordenadas que representan las tiles que se encuentran en el alcance de la bomba en una direccion dada por el vector (dx, dy).
     /// Si la bomba es especial, puede sortear piedras, caso contrario no.
     /// Si la bomba encuentra un desvio, se desvia en la direccion que indica el desvio.
     /// Busca desde la posicion de la bomba en direccion a la recta indicada por el vector (dx, dy).
+    /// Si encuentra una pared, se detiene.
+    /// Si encuentra una roca, se detiene si la bomba no es especial, caso contrario la bomba sigue su camino.
     pub fn buscar_en_direccion(
         &self,
         x_pos: usize,
@@ -72,6 +76,7 @@ impl Mapa {
         tiles_encontradas
     }
 
+    /// Ejecuta un desvio segun la direccion y sigue buscando en ese sentido.
     fn desviar(
         &self,
         x_pos: usize,
@@ -99,6 +104,7 @@ impl Mapa {
     }
 
     /// Devuelve la referencia al tile en la posicion (x_pos, y_pos) si existe, caso contrario None.
+    /// Si la posicion esta fuera del mapa, devuelve None.
     pub fn obtener_tile(&self, x_pos: usize, y_pos: usize) -> Option<&Tile> {
         if x_pos >= self.side_size || y_pos >= self.side_size {
             return None;
@@ -107,6 +113,7 @@ impl Mapa {
     }
 
     /// Devuelve la referencia mutable al tile en la posicion (x_pos, y_pos) si existe, caso contrario None.
+    /// Si la posicion esta fuera del mapa, devuelve None.
     fn obtener_tile_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut Tile> {
         if x_pos >= self.side_size || y_pos >= self.side_size {
             return None;
@@ -115,7 +122,11 @@ impl Mapa {
     }
 
     /// Destruye el tile en la posicion (x_pos, y_pos), poniendo un Tile Vacio en su lugar.
+    /// Si la posicion esta fuera del mapa, no hace nada.
     pub fn destruir_tile(&mut self, x_pos: usize, y_pos: usize) {
+        if x_pos >= self.side_size || y_pos >= self.side_size {
+            return;
+        }
         self.tiles[y_pos][x_pos] = Tile::Vacio;
     }
 

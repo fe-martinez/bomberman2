@@ -1,5 +1,6 @@
 use super::direccion::Direccion;
 
+/// Desvio que altera el recorrido de la explosion de una bomba.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Desvio {
     pub x: usize,

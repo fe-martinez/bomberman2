@@ -9,13 +9,20 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-pub fn inicializar_mapa(argumentos: &[String]) -> Result<Mapa, String> {
-    match transformar_a_mapa(&argumentos[1]) {
+/// Lee un archivo y devuelve un mapa listo para jugar.
+/// Si el archivo no existe o tiene el formato incorrecto, devuelve un error
+/// Los tiles deben tener todos el formato correcto.
+fn inicializar_mapa(path: &str) -> Result<Mapa, String> {
+    match transformar_a_mapa(path) {
         Ok(mapa) => Ok(mapa),
         Err(why) => Err(format!("No se pudo transformar el archivo a mapa: {}", why)),
     }
 }
 
+/// Abre un archivo en la ruta especificada por linea de comando y lo devuelve.
+/// Si el directorio no existe, no abre el archivo y devuelve un error.
+/// Si el archivo no existe, lo crea.
+/// Si el archivo existe, lo sobreescribe.
 pub fn inicializar_output_dir(argumentos: &[String]) -> Result<File, String> {
     match open_path(&argumentos[2], &argumentos[1]) {
         Err(why) => Err(format!("No se pudo abrir el archivo: {}", why)),
@@ -23,7 +30,8 @@ pub fn inicializar_output_dir(argumentos: &[String]) -> Result<File, String> {
     }
 }
 
-pub fn inicializar_posicion(argumentos: &[String]) -> Result<(usize, usize), String> {
+/// Parsea los valores dados por linea de comando, devuelve una tupla si se pudo parsear.
+fn inicializar_posicion(argumentos: &[String]) -> Result<(usize, usize), String> {
     let x_pos = match argumentos[3].parse::<usize>() {
         Err(why) => {
             return Err(format!("No se pudo parsear el argumento x: {}", why));
@@ -39,8 +47,12 @@ pub fn inicializar_posicion(argumentos: &[String]) -> Result<(usize, usize), Str
     Ok((x_pos, y_pos))
 }
 
+
+/// Juega un turno del juego a partir del archivo dado como input.
+/// Devuelve el mapa resultante del turno.
+/// Si el archivo no existe o tiene el formato incorrecto, devuelve un error.
 pub fn jugar(argumentos: &[String]) -> Result<Mapa, String> {
-    let mut mapa = inicializar_mapa(argumentos)?;
+    let mut mapa = inicializar_mapa(&argumentos[1])?;
     let (x_pos, y_pos) = inicializar_posicion(argumentos)?;
     turno::jugar_turno(&mut mapa, x_pos, y_pos)?;
     Ok(mapa)
@@ -48,7 +60,7 @@ pub fn jugar(argumentos: &[String]) -> Result<Mapa, String> {
 
 /// Lee el archivo de texto en la ruta especificada y devuelve un iterador de lineas.
 /// Si no se pudo abrir el archivo, devuelve un error.
-pub fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
+fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
     match File::open(path) {
         Ok(file) => Ok(BufReader::new(file).lines()),
         Err(_) => Err("No se pudo abrir el archivo"),
@@ -56,6 +68,9 @@ pub fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
 }
 
 /// Transforma una linea de texto en un vector de tiles.
+/// Para poder ser transformada, toda la linea tiene que venir con el formato correcto:
+/// <tipo<numero> <tipo><numero> <tipo><numero>
+/// Si no se pudo transformar la linea, devuelve un error.
 fn transformar_linea(s: String, y_pos: usize) -> Result<Vec<Tile>, String> {
     let caracteres: Vec<&str> = s.trim().split(' ').filter(|x| !x.is_empty()).collect();
     println!("Caracteres: {:?}", caracteres);
@@ -104,7 +119,10 @@ pub fn transformar_a_mapa(path: &str) -> Result<Mapa, String> {
     Ok(mapa)
 }
 
-pub fn open_path(carpeta: &str, filename: &str) -> io::Result<File> {
+/// Abre un archivo en la ruta especificada.
+/// Si el directorio no existe, no abre el archivo y devuelve un error.
+/// Si el archivo no existe, lo crea.
+fn open_path(carpeta: &str, filename: &str) -> io::Result<File> {
     let mut directorio = PathBuf::new();
 
     if let Some(stripped) = carpeta.strip_prefix('/') {
@@ -114,9 +132,10 @@ pub fn open_path(carpeta: &str, filename: &str) -> io::Result<File> {
         directorio.push(carpeta);
     }
 
-    directorio.push(filename);
-
+    // No se hace mencion en el enunciado de que hacer en caso de que no exista el directorio
+    // Rust permite crear un directorio facilmente pero seria algo 'exploitable' el poder crear infinitos directorios desde la linea de comandos
     if directorio.exists() {
+        directorio.push(filename);
         File::create(directorio)
     } else {
         Err(io::Error::new(io::ErrorKind::NotFound, "No existe el directorio"))
@@ -124,6 +143,7 @@ pub fn open_path(carpeta: &str, filename: &str) -> io::Result<File> {
 }
 
 /// Imprime el mapa en un archivo de texto.
+/// Los caracteres usados para representar cada tile estan puestos aca para separarlos del modelo.
 pub fn print_mapa_to_file(mapa: &Mapa, file: &mut File) {
     let mut string: String = String::new();
     for v in mapa.tiles.iter() {
@@ -147,11 +167,13 @@ pub fn print_mapa_to_file(mapa: &Mapa, file: &mut File) {
     let _ = file.write(string.as_bytes());
 }
 
+/// Imprime un error en un archivo de texto.
 pub fn print_err_to_file(err: String, mut file: File) -> std::io::Result<()> {
     file.write_all(err.as_bytes())?;
     Ok(())
 }
 
+/// Imprime el mapa en la consola.
 pub fn print_mapa_debug(mapa: &Mapa) {
     for v in mapa.tiles.iter() {
         for t in v.iter() {

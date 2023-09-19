@@ -1,7 +1,9 @@
 use std::collections::HashSet;
-
 use super::coordenada::Coordenada;
 
+/// Enemigo que tiene vida y puede ser afectado por las bombas.
+/// Ser alcanzado por una explosion no significa que vaya a ser destruido.
+/// Si la vida es menor o igual al daño de la bomba, es destruido
 #[derive(Debug, Clone, PartialEq)]
 pub struct Enemigo {
     pub x: usize,
@@ -31,6 +33,7 @@ impl Enemigo {
         }
     }
 
+    /// Devuelve las coordenadas del enemigo.
     pub fn coordenadas(&self) -> Coordenada {
         Coordenada {
             x: self.x,
@@ -38,10 +41,13 @@ impl Enemigo {
         }
     }
 
+    /// Recibe las coordenadas de una bomba y las guarda en el set de bombas que ya impactaron.
+    /// Una misma bomba no puede causarle daño a un enemigo mas de una vez.
     pub fn recibir_impacto(&mut self, x: usize, y: usize) {
         self.bombas_impactadas.insert(Coordenada { x, y });
     }
 
+    /// Devuelve true si la bomba ya impacto en el enemigo.
     pub fn ya_impactado(&self, x: usize, y: usize) -> bool {
         self.bombas_impactadas.contains(&Coordenada { x, y })
     }

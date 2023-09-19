@@ -4,6 +4,9 @@ use super::{
     bomba::Bomba, desvio::Desvio, direccion::Direccion, enemigo::Enemigo, obstaculo::Obstaculo,
 };
 
+/// Crea un enemigo a partir de un string.
+/// El string debe tener el siguiente formato: F(numero). Ejemplo: F2.
+/// Si el string no tiene el formato correcto, devuelve un error.
 fn crear_enemigo(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> Result<Tile, String> {
     let vida = match segundo_caracter {
         Some(c) => c.to_digit(10),
@@ -19,6 +22,9 @@ fn crear_enemigo(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> 
     }
 }
 
+/// Crea una bomba a partir de un string.
+/// El string debe tener el siguiente formato: B(numero). Ejemplo: B2.
+/// Si el string no tiene el formato correcto, devuelve un error.
 fn crear_bomba(x_pos: usize, y_pos: usize, especial: bool, segundo_caracter: Option<char>) -> Result<Tile, String> {
     let radio = match segundo_caracter {
         Some(c) => c.to_digit(10),
@@ -40,6 +46,9 @@ fn crear_bomba(x_pos: usize, y_pos: usize, especial: bool, segundo_caracter: Opt
     }
 }
 
+/// Crea un desvio a partir de un string.
+/// El string debe tener el siguiente formato: D(direccion). Ejemplo: DU.
+/// Si el string no tiene el formato correcto, devuelve un error.
 fn crear_desvio(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> Result<Tile, String> {
     match segundo_caracter {
         None => Err("Un desvio debe tener direccion, D".to_string()),
@@ -62,6 +71,7 @@ fn crear_desvio(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> R
 
 /// Crea una pieza a partir de un string.
 /// El string debe tener el siguiente formato: <tipo><numero>. Ejemplo: F2, B2, S2, R, W, D2, _.
+/// Si el string no tiene el formato correcto, devuelve un error.
 pub fn crear_pieza(s: &str, x_pos: usize, y_pos: usize) -> Result<Tile, String> {
     let primer_caracter = s.chars().next();
     let segundo_caracter = s.chars().nth(1);
