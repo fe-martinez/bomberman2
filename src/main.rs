@@ -10,7 +10,7 @@ fn main() {
     }
     let mut output_file = match bomberman_game::inicializar_output_dir(&args) {
         Err(why) => {
-            println!("No se pudo crear el directorio de salida: {why}");
+            println!("No se pudo abrir el directorio de salida: {why}");
             return;
         }
         Ok(output_dir) => output_dir,

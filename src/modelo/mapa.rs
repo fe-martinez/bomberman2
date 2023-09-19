@@ -7,6 +7,14 @@ pub struct Mapa {
 }
 
 impl Mapa {
+    pub fn crear() -> Self {
+        Mapa {
+            tiles: Vec::new(),
+            side_size: 0,
+        }
+    }
+    
+
     /// Devuelve un tile si es que se cumplen las condiciones correctas:
     ///   - La tile existe.
     ///   - Si la tile no es una pared.
@@ -38,7 +46,7 @@ impl Mapa {
         dx: i32,
         dy: i32,
     ) -> Vec<Coordenada> {
-        let mut tiles: Vec<Coordenada> = Vec::new();
+        let mut tiles_encontradas: Vec<Coordenada> = Vec::new();
         let mut x = x_pos as i32;
         let mut y = y_pos as i32;
         for _ in 0..alcance {
@@ -50,17 +58,18 @@ impl Mapa {
             match self.chequear_tile(x as usize, y as usize, especial) {
                 None => break,
                 Some(Tile::Desvio(_)) => {
-                    let faltante = alcance - tiles.len();
-                    tiles.append(&mut self.desviar(x as usize, y as usize, faltante, especial));
+                    let faltante = alcance - tiles_encontradas.len();
+                    println!("Faltante: {}", faltante);
+                    tiles_encontradas.append(&mut self.desviar(x as usize, y as usize, faltante, especial));
                     break;
                 }
-                Some(_) => tiles.push(Coordenada {
+                Some(_) => tiles_encontradas.push(Coordenada {
                     x: x as usize,
                     y: y as usize,
                 }),
             }
         }
-        tiles
+        tiles_encontradas
     }
 
     fn desviar(
