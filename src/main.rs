@@ -18,9 +18,13 @@ fn main() {
 
     match jugar(&args) {
         Err(why) => {
+            println!("Error al ejecutar, dirijase al archivo de output");
             let _ =
                 bomberman_game::print_err_to_file(format!("No se pudo jugar: {why}"), output_file);
         }
-        Ok(mapa) => print_mapa_to_file(&mapa, &mut output_file),
+        Ok(mapa) => {
+            println!("Juego terminado satisfactoriamente, dirijase al archivo de output");
+            print_mapa_to_file(&mapa, &mut output_file);
+        }
     };
 }

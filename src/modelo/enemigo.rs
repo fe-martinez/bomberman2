@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use super::coordenada::Coordenada;
+use std::collections::HashSet;
 
 /// Enemigo que tiene vida y puede ser afectado por las bombas.
 /// Ser alcanzado por una explosion no significa que vaya a ser destruido.

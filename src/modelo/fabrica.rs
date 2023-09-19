@@ -1,23 +1,37 @@
 use crate::modelo::tile::Tile;
 
 use super::{
-    bomba::Bomba, desvio::Desvio, direccion::Direccion, enemigo::Enemigo, obstaculo::Obstaculo, constantes::{ENEMIGO, BOMBA_NORMAL, BOMBA_ESPECIAL, PIEDRA, PARED, DESVIO, VACIO},
+    bomba::Bomba,
+    constantes::{BOMBA_ESPECIAL, BOMBA_NORMAL, DESVIO, ENEMIGO, PARED, PIEDRA, VACIO},
+    desvio::Desvio,
+    direccion::Direccion,
+    enemigo::Enemigo,
+    obstaculo::Obstaculo,
 };
 
 /// Crea un enemigo a partir de un string.
 /// El string debe tener el siguiente formato: F(numero). Ejemplo: F2.
 /// Si el string no tiene el formato correcto, devuelve un error.
-fn crear_enemigo(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> Result<Tile, String> {
+fn crear_enemigo(
+    x_pos: usize,
+    y_pos: usize,
+    segundo_caracter: Option<char>,
+) -> Result<Tile, String> {
     let vida = match segundo_caracter {
         Some(c) => c.to_digit(10),
         None => None,
     };
     match vida {
-        Some(vida) => if vida > 0 {
-            Ok(Tile::Enemigo(Enemigo::crear(x_pos, y_pos, vida)))
-        } else {
-            Err(format!("Un enemigo no puede tener vida negativa: F{}", vida))
-        },
+        Some(vida) => {
+            if vida > 0 {
+                Ok(Tile::Enemigo(Enemigo::crear(x_pos, y_pos, vida)))
+            } else {
+                Err(format!(
+                    "Un enemigo no puede tener vida negativa: F{}",
+                    vida
+                ))
+            }
+        }
         None => Err("Los enemigos deben tener vida".to_string()),
     }
 }
@@ -25,13 +39,18 @@ fn crear_enemigo(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> 
 /// Crea una bomba a partir de un string.
 /// El string debe tener el siguiente formato: B(numero). Ejemplo: B2.
 /// Si el string no tiene el formato correcto, devuelve un error.
-fn crear_bomba(x_pos: usize, y_pos: usize, especial: bool, segundo_caracter: Option<char>) -> Result<Tile, String> {
+fn crear_bomba(
+    x_pos: usize,
+    y_pos: usize,
+    especial: bool,
+    segundo_caracter: Option<char>,
+) -> Result<Tile, String> {
     let radio = match segundo_caracter {
         Some(c) => c.to_digit(10),
         None => None,
     };
     match radio {
-        Some(radio) => 
+        Some(radio) => {
             if radio > 0 {
                 let bomba = Bomba::crear(x_pos, y_pos, radio, especial);
                 if especial {
@@ -40,8 +59,12 @@ fn crear_bomba(x_pos: usize, y_pos: usize, especial: bool, segundo_caracter: Opt
                     Ok(Tile::BombaNormal(bomba))
                 }
             } else {
-                Err(format!("Una bomba no puede tener radio negativo: B{}", radio))
-        },
+                Err(format!(
+                    "Una bomba no puede tener radio negativo: B{}",
+                    radio
+                ))
+            }
+        }
         None => Err("Una bomba debe tener radio, B".to_string()),
     }
 }
@@ -49,7 +72,11 @@ fn crear_bomba(x_pos: usize, y_pos: usize, especial: bool, segundo_caracter: Opt
 /// Crea un desvio a partir de un string.
 /// El string debe tener el siguiente formato: D(direccion). Ejemplo: DU.
 /// Si el string no tiene el formato correcto, devuelve un error.
-fn crear_desvio(x_pos: usize, y_pos: usize, segundo_caracter: Option<char>) -> Result<Tile, String> {
+fn crear_desvio(
+    x_pos: usize,
+    y_pos: usize,
+    segundo_caracter: Option<char>,
+) -> Result<Tile, String> {
     match segundo_caracter {
         None => Err("Un desvio debe tener direccion, D".to_string()),
         Some(direccion) => {

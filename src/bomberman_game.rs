@@ -1,4 +1,6 @@
-use crate::modelo::constantes::{ENEMIGO, BOMBA_NORMAL, BOMBA_ESPECIAL, PIEDRA, PARED, DESVIO, VACIO};
+use crate::modelo::constantes::{
+    BOMBA_ESPECIAL, BOMBA_NORMAL, DESVIO, ENEMIGO, PARED, PIEDRA, VACIO,
+};
 use crate::modelo::fabrica::crear_pieza;
 use crate::modelo::mapa::Mapa;
 use crate::modelo::tile::Tile;
@@ -25,9 +27,14 @@ fn inicializar_mapa(path: &str) -> Result<Mapa, String> {
 /// Si el archivo no existe, lo crea.
 /// Si el archivo existe, lo sobreescribe.
 pub fn inicializar_output_dir(argumentos: &[String]) -> Result<File, String> {
-    match open_path(&argumentos[2], &argumentos[1]) {
-        Err(why) => Err(format!("No se pudo abrir el archivo: {}", why)),
-        Ok(output_file) => Ok(output_file),
+    let filename_array = &argumentos[1].split('/').collect::<Vec<&str>>();
+
+    match filename_array.last() {
+        Some(filename) => match open_path(&argumentos[2], filename) {
+            Err(why) => Err(format!("No se pudo abrir el archivo: {}", why)),
+            Ok(output_file) => Ok(output_file),
+        },
+        None => Err("No se pudo obtener el nombre del archivo".to_string()),
     }
 }
 
@@ -47,7 +54,6 @@ fn inicializar_posicion(argumentos: &[String]) -> Result<(usize, usize), String>
     };
     Ok((x_pos, y_pos))
 }
-
 
 /// Juega un turno del juego a partir del archivo dado como input.
 /// Devuelve el mapa resultante del turno.
@@ -74,7 +80,6 @@ fn read_file(path: &str) -> Result<io::Lines<BufReader<File>>, &str> {
 /// Si no se pudo transformar la linea, devuelve un error.
 fn transformar_linea(s: String, y_pos: usize) -> Result<Vec<Tile>, String> {
     let caracteres: Vec<&str> = s.trim().split(' ').filter(|x| !x.is_empty()).collect();
-    println!("Caracteres: {:?}", caracteres);
     let mut tiles: Vec<Tile> = Vec::new();
 
     for (x_pos, caracter) in caracteres.into_iter().enumerate() {
@@ -94,7 +99,7 @@ pub fn transformar_a_mapa(path: &str) -> Result<Mapa, String> {
     let mut mapa = Mapa::crear();
     let mut alto: usize = 0;
 
-    for(y_pos, linea) in lineas.into_iter().enumerate() {
+    for (y_pos, linea) in lineas.into_iter().enumerate() {
         match linea {
             Err(_) => return Err("No se pudo leer la linea".to_string()),
             Ok(linea) => {
@@ -151,9 +156,15 @@ pub fn print_mapa_to_file(mapa: &Mapa, file: &mut File) {
     for v in mapa.tiles.iter() {
         for t in v.iter() {
             match t {
-                Tile::Enemigo(enemigo) => string.push_str(format!("{}{}", ENEMIGO, enemigo.vida).as_str()),
-                Tile::BombaNormal(bomba) => string.push_str(format!("{}{}", BOMBA_NORMAL, bomba.radio).as_str()),
-                Tile::BombaEspecial(bomba) => string.push_str(format!("{}{}", BOMBA_ESPECIAL, bomba.radio).as_str()),
+                Tile::Enemigo(enemigo) => {
+                    string.push_str(format!("{}{}", ENEMIGO, enemigo.vida).as_str())
+                }
+                Tile::BombaNormal(bomba) => {
+                    string.push_str(format!("{}{}", BOMBA_NORMAL, bomba.radio).as_str())
+                }
+                Tile::BombaEspecial(bomba) => {
+                    string.push_str(format!("{}{}", BOMBA_ESPECIAL, bomba.radio).as_str())
+                }
                 Tile::Piedra(_) => string.push(PIEDRA),
                 Tile::Pared(_) => string.push(PARED),
                 Tile::Desvio(desvio) => {
@@ -264,5 +275,4 @@ mod test {
         let mapa = transformar_a_mapa("mapas/mapa_test_no_cuadrado.txt");
         assert_eq!(mapa.is_err(), true);
     }
-
 }

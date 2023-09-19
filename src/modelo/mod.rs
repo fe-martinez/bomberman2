@@ -1,4 +1,5 @@
 pub mod bomba;
+pub mod constantes;
 pub mod coordenada;
 pub mod desvio;
 pub mod direccion;
@@ -7,4 +8,3 @@ pub mod fabrica;
 pub mod mapa;
 pub mod obstaculo;
 pub mod tile;
-pub mod constantes;

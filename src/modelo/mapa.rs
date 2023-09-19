@@ -1,6 +1,6 @@
 use super::{coordenada::Coordenada, direccion, tile::Tile};
 
-const DMG_A_ENEMIGOS : u32 = 1;
+const DMG_A_ENEMIGOS: u32 = 1;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Mapa {
@@ -9,7 +9,6 @@ pub struct Mapa {
 }
 
 impl Mapa {
-
     /// Crea un mapa completamente vacio.
     /// Largo=0
     pub fn crear() -> Self {
@@ -65,8 +64,8 @@ impl Mapa {
                 None => break,
                 Some(Tile::Desvio(_)) => {
                     let faltante = alcance - tiles_encontradas.len();
-                    println!("Faltante: {}", faltante);
-                    tiles_encontradas.append(&mut self.desviar(x as usize, y as usize, faltante, especial));
+                    tiles_encontradas
+                        .append(&mut self.desviar(x as usize, y as usize, faltante, especial));
                     break;
                 }
                 Some(_) => tiles_encontradas.push(Coordenada {
@@ -76,6 +75,7 @@ impl Mapa {
             }
         }
         tiles_encontradas
+        // cargo fmt hace que supere las 30 lineas.
     }
 
     /// Ejecuta un desvio segun la direccion y sigue buscando en ese sentido.
