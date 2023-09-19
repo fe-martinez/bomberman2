@@ -1,3 +1,4 @@
+use crate::modelo::constantes::{ENEMIGO, BOMBA_NORMAL, BOMBA_ESPECIAL, PIEDRA, PARED, DESVIO, VACIO};
 use crate::modelo::fabrica::crear_pieza;
 use crate::modelo::mapa::Mapa;
 use crate::modelo::tile::Tile;
@@ -124,9 +125,10 @@ pub fn transformar_a_mapa(path: &str) -> Result<Mapa, String> {
 /// Si el archivo no existe, lo crea.
 fn open_path(carpeta: &str, filename: &str) -> io::Result<File> {
     let mut directorio = PathBuf::new();
+    let carpeta_path = PathBuf::from(carpeta);
 
-    if let Some(stripped) = carpeta.strip_prefix('/') {
-        directorio.push(stripped);
+    if carpeta_path.is_absolute() {
+        directorio.push(carpeta_path);
     } else {
         directorio.push(std::env::current_dir()?);
         directorio.push(carpeta);
@@ -138,7 +140,7 @@ fn open_path(carpeta: &str, filename: &str) -> io::Result<File> {
         directorio.push(filename);
         File::create(directorio)
     } else {
-        Err(io::Error::new(io::ErrorKind::NotFound, "No existe el directorio"))
+        Err(io::Error::new(io::ErrorKind::NotFound, "No existe el directorio. Si el directorio es absoluto se debe pasar con / al principio, si es relativo se debe pasar sin /."))
     }
 }
 
@@ -149,15 +151,15 @@ pub fn print_mapa_to_file(mapa: &Mapa, file: &mut File) {
     for v in mapa.tiles.iter() {
         for t in v.iter() {
             match t {
-                Tile::Enemigo(enemigo) => string.push_str(format!("F{}", enemigo.vida).as_str()),
-                Tile::BombaNormal(bomba) => string.push_str(format!("B{}", bomba.radio).as_str()),
-                Tile::BombaEspecial(bomba) => string.push_str(format!("S{}", bomba.radio).as_str()),
-                Tile::Piedra(_) => string.push('R'),
-                Tile::Pared(_) => string.push('W'),
+                Tile::Enemigo(enemigo) => string.push_str(format!("{}{}", ENEMIGO, enemigo.vida).as_str()),
+                Tile::BombaNormal(bomba) => string.push_str(format!("{}{}", BOMBA_NORMAL, bomba.radio).as_str()),
+                Tile::BombaEspecial(bomba) => string.push_str(format!("{}{}", BOMBA_ESPECIAL, bomba.radio).as_str()),
+                Tile::Piedra(_) => string.push(PIEDRA),
+                Tile::Pared(_) => string.push(PARED),
                 Tile::Desvio(desvio) => {
-                    string.push_str(format!("D{}", desvio.char_direccion()).as_str())
+                    string.push_str(format!("{}{}", DESVIO, desvio.char_direccion()).as_str())
                 }
-                Tile::Vacio => string.push('_'),
+                Tile::Vacio => string.push(VACIO),
             }
             string.push(' ');
         }
@@ -169,7 +171,8 @@ pub fn print_mapa_to_file(mapa: &Mapa, file: &mut File) {
 
 /// Imprime un error en un archivo de texto.
 pub fn print_err_to_file(err: String, mut file: File) -> std::io::Result<()> {
-    file.write_all(err.as_bytes())?;
+    let error_completo = format!("ERROR[{}]", err);
+    file.write_all(error_completo.as_bytes())?;
     Ok(())
 }
 
@@ -203,14 +206,15 @@ mod test {
         let linea = "F1 _ _ B3 _ R W".to_string();
         let tiles = transformar_linea(linea, 0);
         assert_eq!(tiles.is_ok(), true);
-        // assert_eq!(tiles.len(), 7);
-        // assert_eq!(tiles[0], Tile::Enemigo(Enemigo::crear(0, 0, 1)));
-        // assert_eq!(tiles[1], Tile::Vacio);
-        // assert_eq!(tiles[2], Tile::Vacio);
-        // assert_eq!(tiles[3], Tile::BombaNormal(Bomba::crear(3, 0, 3, false)));
-        // assert_eq!(tiles[4], Tile::Vacio);
-        // assert_eq!(tiles[5], Tile::Piedra(Obstaculo::crear(5, 0, false)));
-        // assert_eq!(tiles[6], Tile::Pared(Obstaculo::crear(6, 0, true)));
+        let tiles = tiles.unwrap();
+        assert_eq!(tiles.len(), 7);
+        assert_eq!(tiles[0], Tile::Enemigo(Enemigo::crear(0, 0, 1)));
+        assert_eq!(tiles[1], Tile::Vacio);
+        assert_eq!(tiles[2], Tile::Vacio);
+        assert_eq!(tiles[3], Tile::BombaNormal(Bomba::crear(3, 0, 3, false)));
+        assert_eq!(tiles[4], Tile::Vacio);
+        assert_eq!(tiles[5], Tile::Piedra(Obstaculo::crear(5, 0, false)));
+        assert_eq!(tiles[6], Tile::Pared(Obstaculo::crear(6, 0, true)));
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use crate::modelo::tile::Tile;
 
 use super::{
-    bomba::Bomba, desvio::Desvio, direccion::Direccion, enemigo::Enemigo, obstaculo::Obstaculo,
+    bomba::Bomba, desvio::Desvio, direccion::Direccion, enemigo::Enemigo, obstaculo::Obstaculo, constantes::{ENEMIGO, BOMBA_NORMAL, BOMBA_ESPECIAL, PIEDRA, PARED, DESVIO, VACIO},
 };
 
 /// Crea un enemigo a partir de un string.
@@ -76,13 +76,13 @@ pub fn crear_pieza(s: &str, x_pos: usize, y_pos: usize) -> Result<Tile, String> 
     let primer_caracter = s.chars().next();
     let segundo_caracter = s.chars().nth(1);
     match primer_caracter {
-        Some('F') => crear_enemigo(x_pos, y_pos, segundo_caracter),
-        Some('B') => crear_bomba(x_pos, y_pos, false, segundo_caracter),
-        Some('S') => crear_bomba(x_pos, y_pos, true, segundo_caracter),
-        Some('R') => Ok(Tile::Piedra(Obstaculo::crear(x_pos, y_pos, false))),
-        Some('W') => Ok(Tile::Pared(Obstaculo::crear(x_pos, y_pos, true))),
-        Some('D') => crear_desvio(x_pos, y_pos, segundo_caracter),
-        Some('_') => Ok(Tile::Vacio),
+        Some(ENEMIGO) => crear_enemigo(x_pos, y_pos, segundo_caracter),
+        Some(BOMBA_NORMAL) => crear_bomba(x_pos, y_pos, false, segundo_caracter),
+        Some(BOMBA_ESPECIAL) => crear_bomba(x_pos, y_pos, true, segundo_caracter),
+        Some(PIEDRA) => Ok(Tile::Piedra(Obstaculo::crear(x_pos, y_pos, false))),
+        Some(PARED) => Ok(Tile::Pared(Obstaculo::crear(x_pos, y_pos, true))),
+        Some(DESVIO) => crear_desvio(x_pos, y_pos, segundo_caracter),
+        Some(VACIO) => Ok(Tile::Vacio),
         _ => Err(format!("No se pudo crear la pieza: >{}<", s)),
     }
 }

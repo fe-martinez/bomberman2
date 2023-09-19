@@ -1,5 +1,7 @@
 use super::{coordenada::Coordenada, direccion, tile::Tile};
 
+const DMG_A_ENEMIGOS : u32 = 1;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Mapa {
     pub tiles: Vec<Vec<Tile>>,
@@ -146,7 +148,7 @@ impl Mapa {
                     self.destruir_tile(x_pos, y_pos);
                 } else {
                     enemigo.recibir_impacto(bomba_x, bomba_y);
-                    enemigo.descontar_vida(dmg);
+                    enemigo.descontar_vida(DMG_A_ENEMIGOS);
                 }
             }
         }

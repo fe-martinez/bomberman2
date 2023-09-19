@@ -7,3 +7,4 @@ pub mod fabrica;
 pub mod mapa;
 pub mod obstaculo;
 pub mod tile;
+pub mod constantes;
